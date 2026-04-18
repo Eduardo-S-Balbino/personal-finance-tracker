@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="transactions-section">
+    <h1>Minhas transações</h1>
+
+    <section class="filter-section">
+        <form method="GET" action="{{ url_for('transactions') }}" class="filter-form">
+            <div class="filter-group">
+                <label for="month">Mês</label>
+                <select id="month" name="month">
+                    <option value="1" {% if selected_month == 1 %}selected{% endif %}>Janeiro</option>
+                    <option value="2" {% if selected_month == 2 %}selected{% endif %}>Fevereiro</option>
+                    <option value="3" {% if selected_month == 3 %}selected{% endif %}>Março</option>
+                    <option value="4" {% if selected_month == 4 %}selected{% endif %}>Abril</option>
+                    <option value="5" {% if selected_month == 5 %}selected{% endif %}>Maio</option>
+                    <option value="6" {% if selected_month == 6 %}selected{% endif %}>Junho</option>
+                    <option value="7" {% if selected_month == 7 %}selected{% endif %}>Julho</option>
+                    <option value="8" {% if selected_month == 8 %}selected{% endif %}>Agosto</option>
+                    <option value="9" {% if selected_month == 9 %}selected{% endif %}>Setembro</option>
+                    <option value="10" {% if selected_month == 10 %}selected{% endif %}>Outubro</option>
+                    <option value="11" {% if selected_month == 11 %}selected{% endif %}>Novembro</option>
+                    <option value="12" {% if selected_month == 12 %}selected{% endif %}>Dezembro</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="year">Ano</label>
+                <input
+                    type="number"
+                    id="year"
+                    name="year"
+                    placeholder="Ex: 2026"
+                    value="{{ selected_year }}"
+                >
+            </div>
+
+            <div class="filter-group">
+                <label for="type">Tipo</label>
+                <select id="type" name="type">
+                    <option value="">Todos</option>
+                    <option value="receita" {% if selected_type == "receita" %}selected{% endif %}>Receita</option>
+                    <option value="despesa" {% if selected_type == "despesa" %}selected{% endif %}>Despesa</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="category">Categoria</label>
+                <select id="category" name="category">
+                    <option value="">Todas</option>
+                    {% for category in available_categories %}
+                        <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>
+                            {{ category }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="search">Buscar por título</label>
+                <input
+                    type="text"
+                    id="search"
+                    name="search"
+                    placeholder="Ex: mercado, luz, salário"
+                    value="{{ search_title }}"
+                >
+            </div>
+
+            <div class="filter-buttons">
+                <button type="submit" class="btn">Filtrar</button>
+                <a href="{{ url_for('transactions') }}" class="btn btn-secondary">Limpar filtro</a>
+                <a
+                    href="{{ url_for('export_transactions_csv', month=selected_month, year=selected_year, type=selected_type, category=selected_category, search=search_title) }}"
+                    class="btn"
+                >
+                    Exportar CSV
+                </a>
+            </div>
+        </form>
+    </section>
+
+    {% if transactions %}
+        <div class="table-container">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Valor</th>
+                        <th>Tipo</th>
+                        <th>Categoria</th>
+                        <th>Recorrência</th>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.title }}</td>
+                            <td>R$ {{ "%.2f"|format(transaction.amount) }}</td>
+                            <td>{{ transaction.type }}</td>
+                            <td>{{ transaction.category }}</td>
+                            <td>
+                                {% if transaction.is_recurring and transaction.recurrence_type == "monthly" %}
+                                    Mensal
+                                {% else %}
+                                    Única
+                                {% endif %}
+                            </td>
+                            <td>{{ transaction.date.strftime("%d/%m/%Y") }}</td>
+                            <td>{{ transaction.description if transaction.description else "-" }}</td>
+                            <td class="actions-cell">
+                                <a href="{{ url_for('edit_transaction', transaction_id=transaction.id) }}" class="btn-action edit-btn">
+                                    Editar
+                                </a>
+
+                                <form action="{{ url_for('delete_transaction', transaction_id=transaction.id) }}" method="POST" class="delete-form">
+                                    <button type="submit" class="btn-action delete-btn" onclick="return confirm('Tem certeza que deseja excluir esta transação?')">
+                                        Excluir
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            {% if page > 1 %}
+                <a
+                    href="{{ url_for('transactions', month=selected_month, year=selected_year, type=selected_type, category=selected_category, search=search_title, page=page-1) }}"
+                    class="btn btn-secondary"
+                >
+                    Anterior
+                </a>
+            {% endif %}
+
+            <span class="pagination-info">Página {{ page }} de {{ total_pages }}</span>
+
+            {% if page < total_pages %}
+                <a
+                    href="{{ url_for('transactions', month=selected_month, year=selected_year, type=selected_type, category=selected_category, search=search_title, page=page+1) }}"
+                    class="btn btn-secondary"
+                >
+                    Próxima
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>Nenhuma transação encontrada para esse filtro.</p>
+            <a href="{{ url_for('add_transaction') }}" class="btn">Adicionar transação</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

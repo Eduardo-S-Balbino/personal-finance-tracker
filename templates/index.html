@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <h1>Personal Finance Tracker</h1>
+    <p class="hero-description">
+        Organize suas receitas e despesas de forma simples, clara e prática.
+        Acompanhe saldo, gráficos, recorrências mensais e filtros avançados para entender melhor sua vida financeira.
+    </p>
+
+    {% if "user_id" in session %}
+        <div class="welcome-box">
+            <h2>Bem-vindo de volta{% if session.get("username") %}, {{ session.get("username") }}{% endif %}!</h2>
+            <p>
+                Você já está conectado. Acesse seu dashboard para acompanhar seus resultados
+                ou veja a lista completa das suas transações.
+            </p>
+        </div>
+
+        <div class="hero-buttons">
+            <a href="{{ url_for('dashboard') }}" class="btn">Ir para o dashboard</a>
+            <a href="{{ url_for('transactions') }}" class="btn btn-secondary">Ver transações</a>
+        </div>
+    {% else %}
+        <div class="welcome-box">
+            <h2>Controle melhor o seu dinheiro</h2>
+            <p>
+                Crie sua conta para registrar receitas e despesas, acompanhar recorrências mensais,
+                visualizar gráficos, aplicar filtros e exportar seus dados em CSV.
+            </p>
+        </div>
+
+        <div class="hero-buttons">
+            <a href="{{ url_for('register') }}" class="btn">Criar conta</a>
+            <a href="{{ url_for('login') }}" class="btn btn-secondary">Fazer login</a>
+        </div>
+    {% endif %}
+</section>
+
+<section class="features-section">
+    <h2>Funcionalidades principais</h2>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>Dashboard financeiro</h3>
+            <p>
+                Visualize receitas, despesas, saldo total e acompanhe as últimas transações em um só lugar.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <h3>Gráfico por categoria</h3>
+            <p>
+                Entenda rapidamente onde você está gastando mais com a visualização de despesas por categoria.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <h3>Recorrência mensal</h3>
+            <p>
+                Registre despesas e receitas recorrentes, como aluguel, salário, internet e assinaturas.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <h3>Filtros avançados</h3>
+            <p>
+                Filtre suas transações por mês, ano, tipo, categoria e título para encontrar exatamente o que precisa.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <h3>Exportação em CSV</h3>
+            <p>
+                Exporte seus dados filtrados para CSV e utilize suas informações fora do sistema quando quiser.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <h3>Paginação e organização</h3>
+            <p>
+                Navegue pelas transações de forma mais limpa e organizada, mesmo com muitos lançamentos.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

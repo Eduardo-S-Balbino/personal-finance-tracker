@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="form-section">
+    <h1>Criar conta</h1>
+
+    <form class="form-card" method="POST">
+        <label for="username">Nome de usuário</label>
+        <input type="text" id="username" name="username" placeholder="Digite seu nome de usuário">
+
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" placeholder="Digite seu e-mail">
+
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" placeholder="Crie uma senha">
+
+        <label for="confirm_password">Confirmar senha</label>
+        <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirme sua senha">
+
+        <button type="submit" class="btn">Cadastrar</button>
+    </form>
+</section>
+{% endblock %}
