@@ -151,9 +151,10 @@ Exemplo:
 
 ## 📸 Preview
 
-![Home](caminho-da-imagem/home.png)
-![Dashboard](caminho-da-imagem/dashboard.png)
-![Transações](caminho-da-imagem/transactions.png)
+![Home](assets/1-home.png)
+![Dashboard - Resumo](assets/2-dashboard-summary.png)
+![Dashboard - Gráfico](assets/3-dashboard-chart.png)
+![Transações](assets/4-transactions.png)
 
 ---
 
