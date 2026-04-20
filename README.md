@@ -90,8 +90,13 @@ Este projeto foi desenvolvido como parte da construção do meu portfólio em de
     ├── app.py
     ├── requirements.txt
     ├── README.md
-    ├── instance/
-    │   └── finance.db
+    ├── .gitignore
+    │
+    ├── assets/
+    │   ├── 1-home.png
+    │   ├── 2-dashboard-summary.png
+    │   ├── 3-dashboard-chart.png
+    │   └── 4-transactions.png
     │
     ├── templates/
     │   ├── base.html
@@ -144,10 +149,6 @@ O sistema possui páginas como:
 - Editar transação
 - Lista de transações
 - Exportação CSV
-
-Você pode adicionar prints do projeto aqui depois para deixar o repositório ainda mais profissional.
-
-Exemplo:
 
 ## 📸 Preview
 
