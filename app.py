@@ -137,6 +137,92 @@ def get_filtered_transactions_for_user(user_id):
     }
 
 
+def create_demo_account():
+    demo_email = "demo@finance.com"
+    demo_username = "Demo User"
+    demo_password = "demo123"
+
+    demo_user = User.query.filter_by(email=demo_email).first()
+
+    if not demo_user:
+        demo_user = User(
+            username=demo_username,
+            email=demo_email,
+            password=generate_password_hash(demo_password)
+        )
+
+        db.session.add(demo_user)
+        db.session.commit()
+
+    existing_transactions = Transaction.query.filter_by(user_id=demo_user.id).first()
+
+    if not existing_transactions:
+        today = date.today()
+
+        demo_transactions = [
+            Transaction(
+                title="Salário",
+                amount=3500.00,
+                type="receita",
+                category="Trabalho",
+                date=date(today.year, today.month, 5),
+                description="Receita mensal principal",
+                is_recurring=True,
+                recurrence_type="monthly",
+                user_id=demo_user.id
+            ),
+            Transaction(
+                title="Aluguel",
+                amount=1200.00,
+                type="despesa",
+                category="Moradia",
+                date=date(today.year, today.month, 10),
+                description="Despesa mensal recorrente",
+                is_recurring=True,
+                recurrence_type="monthly",
+                user_id=demo_user.id
+            ),
+            Transaction(
+                title="Internet",
+                amount=120.00,
+                type="despesa",
+                category="Serviços",
+                date=date(today.year, today.month, 12),
+                description="Internet residencial",
+                is_recurring=True,
+                recurrence_type="monthly",
+                user_id=demo_user.id
+            ),
+            Transaction(
+                title="Supermercado",
+                amount=450.00,
+                type="despesa",
+                category="Alimentação",
+                date=today,
+                description="Compra mensal",
+                is_recurring=False,
+                recurrence_type=None,
+                user_id=demo_user.id
+            ),
+            Transaction(
+                title="Freelance",
+                amount=800.00,
+                type="receita",
+                category="Extra",
+                date=today,
+                description="Projeto freelance",
+                is_recurring=False,
+                recurrence_type=None,
+                user_id=demo_user.id
+            )
+        ]
+
+        db.session.add_all(demo_transactions)
+        db.session.commit()
+
+    return demo_user
+
+
 @app.route("/")
 def home():
     if "user_id" in session:
@@ -149,6 +235,18 @@ def home():
 @app.route("/teste/")
 def teste():
     return "ok"
+
+
+@app.route("/demo-login")
+@app.route("/demo-login/")
+def demo_login():
+    demo_user = create_demo_account()
+
+    session["user_id"] = demo_user.id
+    session["username"] = demo_user.username
+
+    flash("Você entrou como usuário demo.")
+    return redirect(url_for("dashboard"))
 
 
 @app.route("/login", methods=["GET", "POST"])

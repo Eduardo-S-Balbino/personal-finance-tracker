@@ -12,6 +12,10 @@
         <input type="password" id="password" name="password" placeholder="Digite sua senha">
 
         <button type="submit" class="btn">Entrar</button>
+
+        <a href="{{ url_for('demo_login') }}" class="btn btn-secondary">
+            Entrar como demo
+        </a>
     </form>
 </section>
 {% endblock %}
