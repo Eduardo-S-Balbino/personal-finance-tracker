@@ -142,7 +142,33 @@ def home():
     return redirect(url_for("login"))
 
 
+@app.route("/login", methods=["GET", "POST"])
+@app.route("/login/", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        if not email or not password:
+            flash("Preencha todos os campos.")
+            return redirect(url_for("login"))
+
+        user = User.query.filter_by(email=email).first()
+
+        if user and check_password_hash(user.password, password):
+            session["user_id"] = user.id
+            session["username"] = user.username
+            flash("Login realizado com sucesso!")
+            return redirect(url_for("dashboard"))
+
+        flash("E-mail ou senha inválidos.")
+        return redirect(url_for("login"))
+
+    return render_template("login.html")
+
+
 @app.route("/register", methods=["GET", "POST"])
+@app.route("/register/", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         username = request.form.get("username")
@@ -180,31 +206,8 @@ def register():
     return render_template("register.html")
 
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-
-        if not email or not password:
-            flash("Preencha todos os campos.")
-            return redirect(url_for("login"))
-
-        user = User.query.filter_by(email=email).first()
-
-        if user and check_password_hash(user.password, password):
-            session["user_id"] = user.id
-            session["username"] = user.username
-            flash("Login realizado com sucesso!")
-            return redirect(url_for("dashboard"))
-        else:
-            flash("E-mail ou senha inválidos.")
-            return redirect(url_for("login"))
-
-    return render_template("login.html")
-
-
 @app.route("/dashboard")
+@app.route("/dashboard/")
 def dashboard():
     if "user_id" not in session:
         flash("Faça login para acessar o dashboard.")
@@ -252,7 +255,6 @@ def dashboard():
     )
 
     balance = total_income - total_expense
-
     recent_transactions = filtered_transactions[:5]
 
     expense_by_category = {}
@@ -260,10 +262,7 @@ def dashboard():
     for transaction in filtered_transactions:
         if transaction.type == "despesa":
             category = transaction.category
-            if category in expense_by_category:
-                expense_by_category[category] += transaction.amount
-            else:
-                expense_by_category[category] = transaction.amount
+            expense_by_category[category] = expense_by_category.get(category, 0) + transaction.amount
 
     chart_labels = list(expense_by_category.keys())
     chart_values = list(expense_by_category.values())
@@ -290,6 +289,7 @@ def dashboard():
 
 
 @app.route("/add_transaction", methods=["GET", "POST"])
+@app.route("/add_transaction/", methods=["GET", "POST"])
 def add_transaction():
     if "user_id" not in session:
         flash("Faça login para adicionar uma transação.")
@@ -349,6 +349,7 @@ def add_transaction():
 
 
 @app.route("/transactions")
+@app.route("/transactions/")
 def transactions():
     if "user_id" not in session:
         flash("Faça login para visualizar suas transações.")
@@ -368,6 +369,7 @@ def transactions():
 
     if page < 1:
         page = 1
+
     if page > total_pages:
         page = total_pages
 
@@ -391,6 +393,7 @@ def transactions():
 
 
 @app.route("/export_transactions_csv")
+@app.route("/export_transactions_csv/")
 def export_transactions_csv():
     if "user_id" not in session:
         flash("Faça login para exportar suas transações.")
@@ -438,6 +441,7 @@ def export_transactions_csv():
 
 
 @app.route("/edit_transaction/<int:transaction_id>", methods=["GET", "POST"])
+@app.route("/edit_transaction/<int:transaction_id>/", methods=["GET", "POST"])
 def edit_transaction(transaction_id):
     if "user_id" not in session:
         flash("Faça login para editar uma transação.")
@@ -496,6 +500,7 @@ def edit_transaction(transaction_id):
 
 
 @app.route("/delete_transaction/<int:transaction_id>", methods=["POST"])
+@app.route("/delete_transaction/<int:transaction_id>/", methods=["POST"])
 def delete_transaction(transaction_id):
     if "user_id" not in session:
         flash("Faça login para excluir uma transação.")
@@ -515,6 +520,7 @@ def delete_transaction(transaction_id):
 
 
 @app.route("/logout")
+@app.route("/logout/")
 def logout():
     session.clear()
     flash("Você saiu da conta com sucesso.")
