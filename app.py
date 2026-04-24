@@ -142,6 +142,12 @@ def home():
     return redirect(url_for("login"))
 
 
+@app.route("/teste")
+@app.route("/teste/")
+def teste():
+    return "ok"
+
+
 @app.route("/login", methods=["GET", "POST"])
 @app.route("/login/", methods=["GET", "POST"])
 def login():
