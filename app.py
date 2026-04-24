@@ -368,6 +368,11 @@ def dashboard():
     )
 
     balance = total_income - total_expense
+
+    savings_rate = 0
+    if total_income > 0:
+        savings_rate = ((balance / total_income) * 100)
+
     recent_transactions = filtered_transactions[:5]
 
     expense_by_category = {}
@@ -390,6 +395,7 @@ def dashboard():
         total_income=total_income,
         total_expense=total_expense,
         balance=balance,
+        savings_rate=round(savings_rate, 1),
         recent_transactions=recent_transactions,
         selected_month=selected_month,
         selected_year=selected_year,
