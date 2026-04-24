@@ -139,7 +139,7 @@ def get_filtered_transactions_for_user(user_id):
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return redirect(url_for("login"))
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -518,7 +518,7 @@ def delete_transaction(transaction_id):
 def logout():
     session.clear()
     flash("Você saiu da conta com sucesso.")
-    return redirect(url_for("home"))
+    return redirect(url_for("login"))
 
 
 with app.app_context():
