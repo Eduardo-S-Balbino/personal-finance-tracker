@@ -6,6 +6,24 @@
     <p>Veja o resumo das suas finanças.</p>
 </section>
 
+<section class="insight-box">
+    <h2>Resumo do mês</h2>
+
+    {% if savings_rate < 0 %}
+        <p>⚠️ Você gastou mais do que ganhou este mês.</p>
+    {% elif savings_rate < 20 %}
+        <p>📉 Sua taxa de economia está baixa ({{ savings_rate }}%).</p>
+    {% else %}
+        <p>✅ Bom controle financeiro! Você economizou {{ savings_rate }}%.</p>
+    {% endif %}
+
+    {% if top_category %}
+        <p>💸 Maior gasto: <strong>{{ top_category }}</strong></p>
+    {% else %}
+        <p>Não há despesas registradas neste filtro.</p>
+    {% endif %}
+</section>
+
 <section class="filter-section">
     <form method="GET" action="{{ url_for('dashboard') }}" class="filter-form">
         <div class="filter-group">

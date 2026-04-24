@@ -385,6 +385,10 @@ def dashboard():
     chart_labels = list(expense_by_category.keys())
     chart_values = list(expense_by_category.values())
 
+    top_category = None
+    if expense_by_category:
+        top_category = max(expense_by_category, key=expense_by_category.get)
+
     available_categories = sorted(
         list({transaction.category for transaction in monthly_transactions})
     )
@@ -396,6 +400,7 @@ def dashboard():
         total_expense=total_expense,
         balance=balance,
         savings_rate=round(savings_rate, 1),
+        top_category=top_category,
         recent_transactions=recent_transactions,
         selected_month=selected_month,
         selected_year=selected_year,
