@@ -417,6 +417,29 @@ def dashboard():
         monthly_income_values.append(month_income)
         monthly_expense_values.append(month_expense)
 
+    alerts = []
+
+    current_month_index = selected_month - 1
+    current_expense = monthly_expense_values[current_month_index]
+
+    previous_expense = 0
+    if current_month_index > 0:
+        previous_expense = monthly_expense_values[current_month_index - 1]
+
+    if total_expense > total_income:
+        alerts.append("Você está gastando mais do que ganha neste mês.")
+
+    if previous_expense > 0 and current_expense > previous_expense:
+        increase = ((current_expense - previous_expense) / previous_expense) * 100
+        alerts.append(f"Seus gastos aumentaram {increase:.1f}% em relação ao mês anterior.")
+
+    if top_category and total_expense > 0:
+        top_value = max(chart_values) if chart_values else 0
+        percentage = (top_value / total_expense) * 100
+
+        if percentage > 50:
+            alerts.append(f"A categoria '{top_category}' representa {percentage:.1f}% dos seus gastos.")
+
     available_categories = sorted(
         list({transaction.category for transaction in monthly_transactions})
     )
@@ -429,6 +452,7 @@ def dashboard():
         balance=balance,
         savings_rate=round(savings_rate, 1),
         top_category=top_category,
+        alerts=alerts,
         recent_transactions=recent_transactions,
         selected_month=selected_month,
         selected_year=selected_year,

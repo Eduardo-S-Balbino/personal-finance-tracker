@@ -24,6 +24,18 @@
     {% endif %}
 </section>
 
+{% if alerts %}
+<section class="alert-box">
+    <h2>Alertas importantes</h2>
+
+    {% for alert in alerts %}
+        <div class="alert-item">
+            ⚠️ {{ alert }}
+        </div>
+    {% endfor %}
+</section>
+{% endif %}
+
 <section class="filter-section">
     <form method="GET" action="{{ url_for('dashboard') }}" class="filter-form">
         <div class="filter-group">
