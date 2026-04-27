@@ -389,6 +389,34 @@ def dashboard():
     if expense_by_category:
         top_category = max(expense_by_category, key=expense_by_category.get)
 
+    monthly_labels = [
+        "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+        "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+    ]
+
+    monthly_income_values = []
+    monthly_expense_values = []
+
+    for month in range(1, 13):
+        month_transactions = build_effective_transactions(
+            raw_transactions,
+            month,
+            selected_year
+        )
+
+        month_income = sum(
+            transaction.amount for transaction in month_transactions
+            if transaction.type == "receita"
+        )
+
+        month_expense = sum(
+            transaction.amount for transaction in month_transactions
+            if transaction.type == "despesa"
+        )
+
+        monthly_income_values.append(month_income)
+        monthly_expense_values.append(month_expense)
+
     available_categories = sorted(
         list({transaction.category for transaction in monthly_transactions})
     )
@@ -408,7 +436,10 @@ def dashboard():
         selected_category=selected_category,
         available_categories=available_categories,
         chart_labels=chart_labels,
-        chart_values=chart_values
+        chart_values=chart_values,
+        monthly_labels=monthly_labels,
+        monthly_income_values=monthly_income_values,
+        monthly_expense_values=monthly_expense_values
     )
 
 

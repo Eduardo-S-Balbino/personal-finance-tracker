@@ -106,6 +106,20 @@
 </section>
 
 <section class="chart-section">
+    <h2>Evolução mensal</h2>
+
+    {% if monthly_income_values or monthly_expense_values %}
+        <div class="chart-container">
+            <canvas id="monthlyEvolutionChart"></canvas>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>Não há dados para gerar o gráfico de evolução mensal.</p>
+        </div>
+    {% endif %}
+</section>
+
+<section class="chart-section">
     <h2>Despesas por categoria</h2>
 
     {% if chart_labels and chart_values %}
@@ -161,6 +175,58 @@
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const monthlyLabels = {{ monthly_labels|tojson }};
+    const monthlyIncomeValues = {{ monthly_income_values|tojson }};
+    const monthlyExpenseValues = {{ monthly_expense_values|tojson }};
+
+    const monthlyEvolutionCanvas = document.getElementById("monthlyEvolutionChart");
+
+    if (monthlyEvolutionCanvas) {
+        const monthlyEvolutionContext = monthlyEvolutionCanvas.getContext("2d");
+
+        new Chart(monthlyEvolutionContext, {
+            type: "line",
+            data: {
+                labels: monthlyLabels,
+                datasets: [
+                    {
+                        label: "Receitas",
+                        data: monthlyIncomeValues,
+                        borderColor: "#16a34a",
+                        backgroundColor: "rgba(22, 163, 74, 0.12)",
+                        borderWidth: 3,
+                        tension: 0.35,
+                        fill: true
+                    },
+                    {
+                        label: "Despesas",
+                        data: monthlyExpenseValues,
+                        borderColor: "#dc2626",
+                        backgroundColor: "rgba(220, 38, 38, 0.12)",
+                        borderWidth: 3,
+                        tension: 0.35,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+</script>
 
 {% if chart_labels and chart_values %}
 <script>
