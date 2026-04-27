@@ -2,8 +2,8 @@
 
 {% block content %}
 <section class="dashboard-header">
-    <h1>Bem-vindo, {{ username }}!</h1>
-    <p>Veja o resumo das suas finanças.</p>
+    <h1>Dashboard financeiro</h1>
+    <p>Bem-vindo, {{ username }}. Aqui está o resumo das suas finanças.</p>
 </section>
 
 <section class="insight-box">
@@ -99,38 +99,40 @@
         <p>R$ {{ "%.2f"|format(balance) }}</p>
     </div>
 
-    <div class="summary-card balance-card">
+    <div class="summary-card savings-card">
         <h3>Taxa de economia</h3>
         <p>{{ savings_rate }}%</p>
     </div>
 </section>
 
-<section class="chart-section">
-    <h2>Evolução mensal</h2>
+<section class="charts-grid">
+    <div class="chart-box">
+        <h2>Evolução mensal</h2>
 
-    {% if monthly_income_values or monthly_expense_values %}
-        <div class="chart-container">
-            <canvas id="monthlyEvolutionChart"></canvas>
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <p>Não há dados para gerar o gráfico de evolução mensal.</p>
-        </div>
-    {% endif %}
-</section>
+        {% if monthly_income_values or monthly_expense_values %}
+            <div class="chart-container">
+                <canvas id="monthlyEvolutionChart"></canvas>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>Não há dados para gerar o gráfico de evolução mensal.</p>
+            </div>
+        {% endif %}
+    </div>
 
-<section class="chart-section">
-    <h2>Despesas por categoria</h2>
+    <div class="chart-box">
+        <h2>Despesas por categoria</h2>
 
-    {% if chart_labels and chart_values %}
-        <div class="chart-container">
-            <canvas id="expenseChart"></canvas>
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <p>Não há despesas para gerar o gráfico neste filtro.</p>
-        </div>
-    {% endif %}
+        {% if chart_labels and chart_values %}
+            <div class="chart-container">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>Não há despesas para gerar o gráfico neste filtro.</p>
+            </div>
+        {% endif %}
+    </div>
 </section>
 
 <section class="dashboard-actions">
