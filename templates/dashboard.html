@@ -36,6 +36,31 @@
 </section>
 {% endif %}
 
+<section class="goal-box">
+    <div class="goal-header">
+        <div>
+            <h2>Meta financeira</h2>
+            <p>Meta de economia mensal: <strong>{{ goal_percentage }}%</strong></p>
+        </div>
+
+        <div class="goal-percentage">
+            {{ goal_progress }}%
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: {{ goal_progress }}%;"></div>
+    </div>
+
+    {% if savings_rate >= goal_percentage %}
+        <p class="goal-message success">🎯 Meta atingida! Você está economizando acima do objetivo.</p>
+    {% elif savings_rate > 0 %}
+        <p class="goal-message">Você está no caminho. Continue reduzindo despesas para atingir a meta.</p>
+    {% else %}
+        <p class="goal-message warning">Ainda não houve economia positiva neste mês.</p>
+    {% endif %}
+</section>
+
 <section class="filter-section">
     <form method="GET" action="{{ url_for('dashboard') }}" class="filter-form">
         <div class="filter-group">

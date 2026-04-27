@@ -373,6 +373,15 @@ def dashboard():
     if total_income > 0:
         savings_rate = ((balance / total_income) * 100)
 
+    goal_percentage = 20
+
+    goal_progress = 0
+    if savings_rate > 0:
+        goal_progress = (savings_rate / goal_percentage) * 100
+
+    if goal_progress > 100:
+        goal_progress = 100
+
     recent_transactions = filtered_transactions[:5]
 
     expense_by_category = {}
@@ -451,6 +460,8 @@ def dashboard():
         total_expense=total_expense,
         balance=balance,
         savings_rate=round(savings_rate, 1),
+        goal_percentage=goal_percentage,
+        goal_progress=round(goal_progress, 1),
         top_category=top_category,
         alerts=alerts,
         recent_transactions=recent_transactions,
