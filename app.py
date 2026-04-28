@@ -9,27 +9,7 @@ import csv
 import io
 import os
 
-base_dir = os.path.abspath(os.path.dirname(__file__))
-
-app = Flask(
-    __name__,
-    template_folder=os.path.join(base_dir, "templates"),
-    static_folder=os.path.join(base_dir, "static")
-)
-
-app.secret_key = os.environ.get("SECRET_KEY", "minha_chave_secreta")
-app.url_map.strict_slashes = False
-
-database_url = os.environ.get("DATABASE_URL")
-
-if database_url:
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///finance.db"
-
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 
 
 class User(db.Model):
@@ -245,533 +225,548 @@ def create_demo_account():
     return demo_user
 
 
-@app.route("/")
-def home():
-    if "user_id" in session:
-        return redirect(url_for("dashboard"))
+def create_app():
+    base_dir = os.path.abspath(os.path.dirname(__file__))
 
-    return redirect(url_for("login"))
+    app = Flask(
+        __name__,
+        template_folder=os.path.join(base_dir, "templates"),
+        static_folder=os.path.join(base_dir, "static")
+    )
 
+    app.secret_key = os.environ.get("SECRET_KEY", "minha_chave_secreta")
+    app.url_map.strict_slashes = False
 
-@app.route("/teste")
-@app.route("/teste/")
-def teste():
-    return "ok"
+    database_url = os.environ.get("DATABASE_URL")
 
+    if database_url:
+        app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    else:
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///finance.db"
 
-@app.route("/demo-login")
-@app.route("/demo-login/")
-def demo_login():
-    demo_user = create_demo_account()
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    session["user_id"] = demo_user.id
-    session["username"] = demo_user.username
+    db.init_app(app)
 
-    flash("Você entrou como usuário demo.")
-    return redirect(url_for("dashboard"))
-
-
-@app.route("/login", methods=["GET", "POST"])
-@app.route("/login/", methods=["GET", "POST"])
-def login():
-    if "user_id" in session:
-        return redirect(url_for("dashboard"))
-
-    if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-
-        if not email or not password:
-            flash("Preencha todos os campos.")
-            return redirect(url_for("login"))
-
-        user = User.query.filter_by(email=email).first()
-
-        if user and check_password_hash(user.password, password):
-            session["user_id"] = user.id
-            session["username"] = user.username
-            flash("Login realizado com sucesso!")
+    @app.route("/")
+    def home():
+        if "user_id" in session:
             return redirect(url_for("dashboard"))
 
-        flash("E-mail ou senha inválidos.")
         return redirect(url_for("login"))
 
-    return render_template("login.html")
+    @app.route("/teste")
+    @app.route("/teste/")
+    def teste():
+        return "ok"
 
+    @app.route("/demo-login")
+    @app.route("/demo-login/")
+    def demo_login():
+        demo_user = create_demo_account()
 
-@app.route("/register", methods=["GET", "POST"])
-@app.route("/register/", methods=["GET", "POST"])
-def register():
-    if "user_id" in session:
+        session["user_id"] = demo_user.id
+        session["username"] = demo_user.username
+
+        flash("Você entrou como usuário demo.")
         return redirect(url_for("dashboard"))
 
-    if request.method == "POST":
-        username = request.form.get("username")
-        email = request.form.get("email")
-        password = request.form.get("password")
-        confirm_password = request.form.get("confirm_password")
+    @app.route("/login", methods=["GET", "POST"])
+    @app.route("/login/", methods=["GET", "POST"])
+    def login():
+        if "user_id" in session:
+            return redirect(url_for("dashboard"))
 
-        if not username or not email or not password or not confirm_password:
-            flash("Preencha todos os campos.")
-            return redirect(url_for("register"))
+        if request.method == "POST":
+            email = request.form.get("email")
+            password = request.form.get("password")
 
-        if password != confirm_password:
-            flash("As senhas não coincidem.")
-            return redirect(url_for("register"))
+            if not email or not password:
+                flash("Preencha todos os campos.")
+                return redirect(url_for("login"))
 
-        existing_user = User.query.filter_by(username=username).first()
-        if existing_user:
-            flash("Este nome de usuário já está em uso.")
-            return redirect(url_for("register"))
+            user = User.query.filter_by(email=email).first()
 
-        existing_email = User.query.filter_by(email=email).first()
-        if existing_email:
-            flash("Este e-mail já está cadastrado.")
-            return redirect(url_for("register"))
+            if user and check_password_hash(user.password, password):
+                session["user_id"] = user.id
+                session["username"] = user.username
+                flash("Login realizado com sucesso!")
+                return redirect(url_for("dashboard"))
 
-        hashed_password = generate_password_hash(password)
+            flash("E-mail ou senha inválidos.")
+            return redirect(url_for("login"))
 
-        new_user = User(
-            username=username,
-            email=email,
-            password=hashed_password,
-            goal_percentage=20
-        )
+        return render_template("login.html")
 
-        db.session.add(new_user)
+    @app.route("/register", methods=["GET", "POST"])
+    @app.route("/register/", methods=["GET", "POST"])
+    def register():
+        if "user_id" in session:
+            return redirect(url_for("dashboard"))
+
+        if request.method == "POST":
+            username = request.form.get("username")
+            email = request.form.get("email")
+            password = request.form.get("password")
+            confirm_password = request.form.get("confirm_password")
+
+            if not username or not email or not password or not confirm_password:
+                flash("Preencha todos os campos.")
+                return redirect(url_for("register"))
+
+            if password != confirm_password:
+                flash("As senhas não coincidem.")
+                return redirect(url_for("register"))
+
+            existing_user = User.query.filter_by(username=username).first()
+            if existing_user:
+                flash("Este nome de usuário já está em uso.")
+                return redirect(url_for("register"))
+
+            existing_email = User.query.filter_by(email=email).first()
+            if existing_email:
+                flash("Este e-mail já está cadastrado.")
+                return redirect(url_for("register"))
+
+            hashed_password = generate_password_hash(password)
+
+            new_user = User(
+                username=username,
+                email=email,
+                password=hashed_password,
+                goal_percentage=20
+            )
+
+            db.session.add(new_user)
+            db.session.commit()
+
+            flash("Conta criada com sucesso!")
+            return redirect(url_for("login"))
+
+        return render_template("register.html")
+
+    @app.route("/update-goal", methods=["POST"])
+    @app.route("/update-goal/", methods=["POST"])
+    def update_goal():
+        if "user_id" not in session:
+            flash("Faça login para atualizar sua meta.")
+            return redirect(url_for("login"))
+
+        goal_percentage = request.form.get("goal_percentage", type=float)
+
+        if goal_percentage not in [10.0, 20.0, 30.0]:
+            flash("Escolha uma meta válida.")
+            return redirect(url_for("dashboard"))
+
+        user = User.query.get_or_404(session["user_id"])
+        user.goal_percentage = goal_percentage
+
         db.session.commit()
 
-        flash("Conta criada com sucesso!")
-        return redirect(url_for("login"))
-
-    return render_template("register.html")
-
-
-@app.route("/update-goal", methods=["POST"])
-@app.route("/update-goal/", methods=["POST"])
-def update_goal():
-    if "user_id" not in session:
-        flash("Faça login para atualizar sua meta.")
-        return redirect(url_for("login"))
-
-    goal_percentage = request.form.get("goal_percentage", type=float)
-
-    if goal_percentage not in [10.0, 20.0, 30.0]:
-        flash("Escolha uma meta válida.")
+        flash("Meta financeira atualizada com sucesso!")
         return redirect(url_for("dashboard"))
 
-    user = User.query.get_or_404(session["user_id"])
-    user.goal_percentage = goal_percentage
+    @app.route("/dashboard")
+    @app.route("/dashboard/")
+    def dashboard():
+        if "user_id" not in session:
+            flash("Faça login para acessar o dashboard.")
+            return redirect(url_for("login"))
 
-    db.session.commit()
+        current_user = User.query.get_or_404(session["user_id"])
 
-    flash("Meta financeira atualizada com sucesso!")
-    return redirect(url_for("dashboard"))
+        current_date = datetime.today()
 
+        selected_month = request.args.get("month", default=current_date.month, type=int)
+        selected_year = request.args.get("year", default=current_date.year, type=int)
+        selected_type = request.args.get("type", default="")
+        selected_category = request.args.get("category", default="")
 
-@app.route("/dashboard")
-@app.route("/dashboard/")
-def dashboard():
-    if "user_id" not in session:
-        flash("Faça login para acessar o dashboard.")
-        return redirect(url_for("login"))
+        raw_transactions = Transaction.query.filter_by(
+            user_id=session["user_id"]
+        ).order_by(Transaction.date.desc()).all()
 
-    current_user = User.query.get_or_404(session["user_id"])
-
-    current_date = datetime.today()
-
-    selected_month = request.args.get("month", default=current_date.month, type=int)
-    selected_year = request.args.get("year", default=current_date.year, type=int)
-    selected_type = request.args.get("type", default="")
-    selected_category = request.args.get("category", default="")
-
-    raw_transactions = Transaction.query.filter_by(
-        user_id=session["user_id"]
-    ).order_by(Transaction.date.desc()).all()
-
-    monthly_transactions = build_effective_transactions(
-        raw_transactions,
-        selected_month,
-        selected_year
-    )
-
-    filtered_transactions = monthly_transactions
-
-    if selected_type:
-        filtered_transactions = [
-            transaction for transaction in filtered_transactions
-            if transaction.type == selected_type
-        ]
-
-    if selected_category:
-        filtered_transactions = [
-            transaction for transaction in filtered_transactions
-            if transaction.category == selected_category
-        ]
-
-    total_income = sum(
-        transaction.amount for transaction in filtered_transactions
-        if transaction.type == "receita"
-    )
-
-    total_expense = sum(
-        transaction.amount for transaction in filtered_transactions
-        if transaction.type == "despesa"
-    )
-
-    balance = total_income - total_expense
-
-    savings_rate = 0
-    if total_income > 0:
-        savings_rate = ((balance / total_income) * 100)
-
-    goal_percentage = current_user.goal_percentage or 20
-
-    goal_progress = 0
-    if savings_rate > 0:
-        goal_progress = (savings_rate / goal_percentage) * 100
-
-    if goal_progress > 100:
-        goal_progress = 100
-
-    recent_transactions = filtered_transactions[:5]
-
-    expense_by_category = {}
-
-    for transaction in filtered_transactions:
-        if transaction.type == "despesa":
-            category = transaction.category
-            expense_by_category[category] = expense_by_category.get(category, 0) + transaction.amount
-
-    chart_labels = list(expense_by_category.keys())
-    chart_values = list(expense_by_category.values())
-
-    top_category = None
-    if expense_by_category:
-        top_category = max(expense_by_category, key=expense_by_category.get)
-
-    monthly_labels = [
-        "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-        "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-    ]
-
-    monthly_income_values = []
-    monthly_expense_values = []
-
-    for month in range(1, 13):
-        month_transactions = build_effective_transactions(
+        monthly_transactions = build_effective_transactions(
             raw_transactions,
-            month,
+            selected_month,
             selected_year
         )
 
-        month_income = sum(
-            transaction.amount for transaction in month_transactions
+        filtered_transactions = monthly_transactions
+
+        if selected_type:
+            filtered_transactions = [
+                transaction for transaction in filtered_transactions
+                if transaction.type == selected_type
+            ]
+
+        if selected_category:
+            filtered_transactions = [
+                transaction for transaction in filtered_transactions
+                if transaction.category == selected_category
+            ]
+
+        total_income = sum(
+            transaction.amount for transaction in filtered_transactions
             if transaction.type == "receita"
         )
 
-        month_expense = sum(
-            transaction.amount for transaction in month_transactions
+        total_expense = sum(
+            transaction.amount for transaction in filtered_transactions
             if transaction.type == "despesa"
         )
 
-        monthly_income_values.append(month_income)
-        monthly_expense_values.append(month_expense)
+        balance = total_income - total_expense
 
-    alerts = []
+        savings_rate = 0
+        if total_income > 0:
+            savings_rate = ((balance / total_income) * 100)
 
-    current_month_index = selected_month - 1
-    current_expense = monthly_expense_values[current_month_index]
+        goal_percentage = current_user.goal_percentage or 20
 
-    previous_expense = 0
-    if current_month_index > 0:
-        previous_expense = monthly_expense_values[current_month_index - 1]
+        goal_progress = 0
+        if savings_rate > 0:
+            goal_progress = (savings_rate / goal_percentage) * 100
 
-    if total_expense > total_income:
-        alerts.append("Você está gastando mais do que ganha neste mês.")
+        if goal_progress > 100:
+            goal_progress = 100
 
-    if previous_expense > 0 and current_expense > previous_expense:
-        increase = ((current_expense - previous_expense) / previous_expense) * 100
-        alerts.append(f"Seus gastos aumentaram {increase:.1f}% em relação ao mês anterior.")
+        recent_transactions = filtered_transactions[:5]
 
-    if top_category and total_expense > 0:
-        top_value = max(chart_values) if chart_values else 0
-        percentage = (top_value / total_expense) * 100
+        expense_by_category = {}
 
-        if percentage > 50:
-            alerts.append(f"A categoria '{top_category}' representa {percentage:.1f}% dos seus gastos.")
+        for transaction in filtered_transactions:
+            if transaction.type == "despesa":
+                category = transaction.category
+                expense_by_category[category] = expense_by_category.get(category, 0) + transaction.amount
 
-    available_categories = sorted(
-        list({transaction.category for transaction in monthly_transactions})
-    )
+        chart_labels = list(expense_by_category.keys())
+        chart_values = list(expense_by_category.values())
 
-    return render_template(
-        "dashboard.html",
-        username=session["username"],
-        total_income=total_income,
-        total_expense=total_expense,
-        balance=balance,
-        savings_rate=round(savings_rate, 1),
-        goal_percentage=goal_percentage,
-        goal_progress=round(goal_progress, 1),
-        top_category=top_category,
-        alerts=alerts,
-        recent_transactions=recent_transactions,
-        selected_month=selected_month,
-        selected_year=selected_year,
-        selected_type=selected_type,
-        selected_category=selected_category,
-        available_categories=available_categories,
-        chart_labels=chart_labels,
-        chart_values=chart_values,
-        monthly_labels=monthly_labels,
-        monthly_income_values=monthly_income_values,
-        monthly_expense_values=monthly_expense_values
-    )
+        top_category = None
+        if expense_by_category:
+            top_category = max(expense_by_category, key=expense_by_category.get)
 
+        monthly_labels = [
+            "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+            "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+        ]
 
-@app.route("/add_transaction", methods=["GET", "POST"])
-@app.route("/add_transaction/", methods=["GET", "POST"])
-def add_transaction():
-    if "user_id" not in session:
-        flash("Faça login para adicionar uma transação.")
-        return redirect(url_for("login"))
+        monthly_income_values = []
+        monthly_expense_values = []
 
-    if request.method == "POST":
-        title = request.form.get("title")
-        amount = request.form.get("amount")
-        type_ = request.form.get("type")
-        category = request.form.get("category")
-        date_str = request.form.get("date")
-        description = request.form.get("description")
-        recurrence = request.form.get("recurrence")
+        for month in range(1, 13):
+            month_transactions = build_effective_transactions(
+                raw_transactions,
+                month,
+                selected_year
+            )
 
-        if not title or not amount or not type_ or not category or not date_str or not recurrence:
-            flash("Preencha todos os campos obrigatórios.")
-            return redirect(url_for("add_transaction"))
+            month_income = sum(
+                transaction.amount for transaction in month_transactions
+                if transaction.type == "receita"
+            )
 
-        try:
-            amount = float(amount)
-        except ValueError:
-            flash("Digite um valor numérico válido.")
-            return redirect(url_for("add_transaction"))
+            month_expense = sum(
+                transaction.amount for transaction in month_transactions
+                if transaction.type == "despesa"
+            )
 
-        if amount <= 0:
-            flash("O valor deve ser maior que zero.")
-            return redirect(url_for("add_transaction"))
+            monthly_income_values.append(month_income)
+            monthly_expense_values.append(month_expense)
 
-        try:
-            transaction_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-        except ValueError:
-            flash("Digite uma data válida.")
-            return redirect(url_for("add_transaction"))
+        alerts = []
 
-        is_recurring = recurrence == "monthly"
-        recurrence_type = "monthly" if recurrence == "monthly" else None
+        current_month_index = selected_month - 1
+        current_expense = monthly_expense_values[current_month_index]
 
-        new_transaction = Transaction(
-            title=title,
-            amount=amount,
-            type=type_,
-            category=category,
-            date=transaction_date,
-            description=description,
-            is_recurring=is_recurring,
-            recurrence_type=recurrence_type,
-            user_id=session["user_id"]
+        previous_expense = 0
+        if current_month_index > 0:
+            previous_expense = monthly_expense_values[current_month_index - 1]
+
+        if total_expense > total_income:
+            alerts.append("Você está gastando mais do que ganha neste mês.")
+
+        if previous_expense > 0 and current_expense > previous_expense:
+            increase = ((current_expense - previous_expense) / previous_expense) * 100
+            alerts.append(f"Seus gastos aumentaram {increase:.1f}% em relação ao mês anterior.")
+
+        if top_category and total_expense > 0:
+            top_value = max(chart_values) if chart_values else 0
+            percentage = (top_value / total_expense) * 100
+
+            if percentage > 50:
+                alerts.append(f"A categoria '{top_category}' representa {percentage:.1f}% dos seus gastos.")
+
+        available_categories = sorted(
+            list({transaction.category for transaction in monthly_transactions})
         )
 
-        db.session.add(new_transaction)
-        db.session.commit()
+        return render_template(
+            "dashboard.html",
+            username=session["username"],
+            total_income=total_income,
+            total_expense=total_expense,
+            balance=balance,
+            savings_rate=round(savings_rate, 1),
+            goal_percentage=goal_percentage,
+            goal_progress=round(goal_progress, 1),
+            top_category=top_category,
+            alerts=alerts,
+            recent_transactions=recent_transactions,
+            selected_month=selected_month,
+            selected_year=selected_year,
+            selected_type=selected_type,
+            selected_category=selected_category,
+            available_categories=available_categories,
+            chart_labels=chart_labels,
+            chart_values=chart_values,
+            monthly_labels=monthly_labels,
+            monthly_income_values=monthly_income_values,
+            monthly_expense_values=monthly_expense_values
+        )
 
-        flash("Transação adicionada com sucesso!")
-        return redirect(url_for("transactions"))
+    @app.route("/add_transaction", methods=["GET", "POST"])
+    @app.route("/add_transaction/", methods=["GET", "POST"])
+    def add_transaction():
+        if "user_id" not in session:
+            flash("Faça login para adicionar uma transação.")
+            return redirect(url_for("login"))
 
-    return render_template("add_transaction.html")
+        if request.method == "POST":
+            title = request.form.get("title")
+            amount = request.form.get("amount")
+            type_ = request.form.get("type")
+            category = request.form.get("category")
+            date_str = request.form.get("date")
+            description = request.form.get("description")
+            recurrence = request.form.get("recurrence")
 
+            if not title or not amount or not type_ or not category or not date_str or not recurrence:
+                flash("Preencha todos os campos obrigatórios.")
+                return redirect(url_for("add_transaction"))
 
-@app.route("/transactions")
-@app.route("/transactions/")
-def transactions():
-    if "user_id" not in session:
-        flash("Faça login para visualizar suas transações.")
-        return redirect(url_for("login"))
+            try:
+                amount = float(amount)
+            except ValueError:
+                flash("Digite um valor numérico válido.")
+                return redirect(url_for("add_transaction"))
 
-    data = get_filtered_transactions_for_user(session["user_id"])
-    all_transactions = data["transactions"]
+            if amount <= 0:
+                flash("O valor deve ser maior que zero.")
+                return redirect(url_for("add_transaction"))
 
-    page = request.args.get("page", default=1, type=int)
-    per_page = 5
+            try:
+                transaction_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                flash("Digite uma data válida.")
+                return redirect(url_for("add_transaction"))
 
-    total_transactions = len(all_transactions)
-    total_pages = (total_transactions + per_page - 1) // per_page
+            is_recurring = recurrence == "monthly"
+            recurrence_type = "monthly" if recurrence == "monthly" else None
 
-    if total_pages == 0:
-        total_pages = 1
+            new_transaction = Transaction(
+                title=title,
+                amount=amount,
+                type=type_,
+                category=category,
+                date=transaction_date,
+                description=description,
+                is_recurring=is_recurring,
+                recurrence_type=recurrence_type,
+                user_id=session["user_id"]
+            )
 
-    if page < 1:
-        page = 1
+            db.session.add(new_transaction)
+            db.session.commit()
 
-    if page > total_pages:
-        page = total_pages
+            flash("Transação adicionada com sucesso!")
+            return redirect(url_for("transactions"))
 
-    start_index = (page - 1) * per_page
-    end_index = start_index + per_page
+        return render_template("add_transaction.html")
 
-    paginated_transactions = all_transactions[start_index:end_index]
+    @app.route("/transactions")
+    @app.route("/transactions/")
+    def transactions():
+        if "user_id" not in session:
+            flash("Faça login para visualizar suas transações.")
+            return redirect(url_for("login"))
 
-    return render_template(
-        "transactions.html",
-        transactions=paginated_transactions,
-        selected_month=data["selected_month"],
-        selected_year=data["selected_year"],
-        selected_type=data["selected_type"],
-        selected_category=data["selected_category"],
-        available_categories=data["available_categories"],
-        search_title=data["search_title"],
-        page=page,
-        total_pages=total_pages
-    )
+        data = get_filtered_transactions_for_user(session["user_id"])
+        all_transactions = data["transactions"]
 
+        page = request.args.get("page", default=1, type=int)
+        per_page = 5
 
-@app.route("/export_transactions_csv")
-@app.route("/export_transactions_csv/")
-def export_transactions_csv():
-    if "user_id" not in session:
-        flash("Faça login para exportar suas transações.")
-        return redirect(url_for("login"))
+        total_transactions = len(all_transactions)
+        total_pages = (total_transactions + per_page - 1) // per_page
 
-    data = get_filtered_transactions_for_user(session["user_id"])
-    transactions = data["transactions"]
+        if total_pages == 0:
+            total_pages = 1
 
-    output = io.StringIO()
-    writer = csv.writer(output)
+        if page < 1:
+            page = 1
 
-    writer.writerow([
-        "Titulo",
-        "Valor",
-        "Tipo",
-        "Categoria",
-        "Recorrencia",
-        "Data",
-        "Descricao"
-    ])
+        if page > total_pages:
+            page = total_pages
 
-    for transaction in transactions:
-        recurrence_label = "Mensal" if transaction.is_recurring and transaction.recurrence_type == "monthly" else "Única"
+        start_index = (page - 1) * per_page
+        end_index = start_index + per_page
+
+        paginated_transactions = all_transactions[start_index:end_index]
+
+        return render_template(
+            "transactions.html",
+            transactions=paginated_transactions,
+            selected_month=data["selected_month"],
+            selected_year=data["selected_year"],
+            selected_type=data["selected_type"],
+            selected_category=data["selected_category"],
+            available_categories=data["available_categories"],
+            search_title=data["search_title"],
+            page=page,
+            total_pages=total_pages
+        )
+
+    @app.route("/export_transactions_csv")
+    @app.route("/export_transactions_csv/")
+    def export_transactions_csv():
+        if "user_id" not in session:
+            flash("Faça login para exportar suas transações.")
+            return redirect(url_for("login"))
+
+        data = get_filtered_transactions_for_user(session["user_id"])
+        transactions = data["transactions"]
+
+        output = io.StringIO()
+        writer = csv.writer(output)
 
         writer.writerow([
-            transaction.title,
-            f"{transaction.amount:.2f}",
-            transaction.type,
-            transaction.category,
-            recurrence_label,
-            transaction.date.strftime("%d/%m/%Y"),
-            transaction.description if transaction.description else ""
+            "Titulo",
+            "Valor",
+            "Tipo",
+            "Categoria",
+            "Recorrencia",
+            "Data",
+            "Descricao"
         ])
 
-    csv_content = output.getvalue()
-    output.close()
+        for transaction in transactions:
+            recurrence_label = "Mensal" if transaction.is_recurring and transaction.recurrence_type == "monthly" else "Única"
 
-    filename = f"transacoes_{data['selected_month']:02d}_{data['selected_year']}.csv"
+            writer.writerow([
+                transaction.title,
+                f"{transaction.amount:.2f}",
+                transaction.type,
+                transaction.category,
+                recurrence_label,
+                transaction.date.strftime("%d/%m/%Y"),
+                transaction.description if transaction.description else ""
+            ])
 
-    return Response(
-        csv_content,
-        mimetype="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
-    )
+        csv_content = output.getvalue()
+        output.close()
 
+        filename = f"transacoes_{data['selected_month']:02d}_{data['selected_year']}.csv"
 
-@app.route("/edit_transaction/<int:transaction_id>", methods=["GET", "POST"])
-@app.route("/edit_transaction/<int:transaction_id>/", methods=["GET", "POST"])
-def edit_transaction(transaction_id):
-    if "user_id" not in session:
-        flash("Faça login para editar uma transação.")
-        return redirect(url_for("login"))
+        return Response(
+            csv_content,
+            mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
 
-    transaction = Transaction.query.get_or_404(transaction_id)
+    @app.route("/edit_transaction/<int:transaction_id>", methods=["GET", "POST"])
+    @app.route("/edit_transaction/<int:transaction_id>/", methods=["GET", "POST"])
+    def edit_transaction(transaction_id):
+        if "user_id" not in session:
+            flash("Faça login para editar uma transação.")
+            return redirect(url_for("login"))
 
-    if transaction.user_id != session["user_id"]:
-        flash("Você não tem permissão para editar esta transação.")
-        return redirect(url_for("transactions"))
+        transaction = Transaction.query.get_or_404(transaction_id)
 
-    if request.method == "POST":
-        title = request.form.get("title")
-        amount = request.form.get("amount")
-        type_ = request.form.get("type")
-        category = request.form.get("category")
-        date_str = request.form.get("date")
-        description = request.form.get("description")
-        recurrence = request.form.get("recurrence")
+        if transaction.user_id != session["user_id"]:
+            flash("Você não tem permissão para editar esta transação.")
+            return redirect(url_for("transactions"))
 
-        if not title or not amount or not type_ or not category or not date_str or not recurrence:
-            flash("Preencha todos os campos obrigatórios.")
-            return redirect(url_for("edit_transaction", transaction_id=transaction.id))
+        if request.method == "POST":
+            title = request.form.get("title")
+            amount = request.form.get("amount")
+            type_ = request.form.get("type")
+            category = request.form.get("category")
+            date_str = request.form.get("date")
+            description = request.form.get("description")
+            recurrence = request.form.get("recurrence")
 
-        try:
-            amount = float(amount)
-        except ValueError:
-            flash("Digite um valor numérico válido.")
-            return redirect(url_for("edit_transaction", transaction_id=transaction.id))
+            if not title or not amount or not type_ or not category or not date_str or not recurrence:
+                flash("Preencha todos os campos obrigatórios.")
+                return redirect(url_for("edit_transaction", transaction_id=transaction.id))
 
-        if amount <= 0:
-            flash("O valor deve ser maior que zero.")
-            return redirect(url_for("edit_transaction", transaction_id=transaction.id))
+            try:
+                amount = float(amount)
+            except ValueError:
+                flash("Digite um valor numérico válido.")
+                return redirect(url_for("edit_transaction", transaction_id=transaction.id))
 
-        try:
-            transaction_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-        except ValueError:
-            flash("Digite uma data válida.")
-            return redirect(url_for("edit_transaction", transaction_id=transaction.id))
+            if amount <= 0:
+                flash("O valor deve ser maior que zero.")
+                return redirect(url_for("edit_transaction", transaction_id=transaction.id))
 
-        transaction.title = title
-        transaction.amount = amount
-        transaction.type = type_
-        transaction.category = category
-        transaction.date = transaction_date
-        transaction.description = description
-        transaction.is_recurring = recurrence == "monthly"
-        transaction.recurrence_type = "monthly" if recurrence == "monthly" else None
+            try:
+                transaction_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                flash("Digite uma data válida.")
+                return redirect(url_for("edit_transaction", transaction_id=transaction.id))
 
+            transaction.title = title
+            transaction.amount = amount
+            transaction.type = type_
+            transaction.category = category
+            transaction.date = transaction_date
+            transaction.description = description
+            transaction.is_recurring = recurrence == "monthly"
+            transaction.recurrence_type = "monthly" if recurrence == "monthly" else None
+
+            db.session.commit()
+
+            flash("Transação atualizada com sucesso!")
+            return redirect(url_for("transactions"))
+
+        return render_template("edit_transaction.html", transaction=transaction)
+
+    @app.route("/delete_transaction/<int:transaction_id>", methods=["POST"])
+    @app.route("/delete_transaction/<int:transaction_id>/", methods=["POST"])
+    def delete_transaction(transaction_id):
+        if "user_id" not in session:
+            flash("Faça login para excluir uma transação.")
+            return redirect(url_for("login"))
+
+        transaction = Transaction.query.get_or_404(transaction_id)
+
+        if transaction.user_id != session["user_id"]:
+            flash("Você não tem permissão para excluir esta transação.")
+            return redirect(url_for("transactions"))
+
+        db.session.delete(transaction)
         db.session.commit()
 
-        flash("Transação atualizada com sucesso!")
+        flash("Transação excluída com sucesso!")
         return redirect(url_for("transactions"))
 
-    return render_template("edit_transaction.html", transaction=transaction)
-
-
-@app.route("/delete_transaction/<int:transaction_id>", methods=["POST"])
-@app.route("/delete_transaction/<int:transaction_id>/", methods=["POST"])
-def delete_transaction(transaction_id):
-    if "user_id" not in session:
-        flash("Faça login para excluir uma transação.")
+    @app.route("/logout")
+    @app.route("/logout/")
+    def logout():
+        session.clear()
+        flash("Você saiu da conta com sucesso.")
         return redirect(url_for("login"))
 
-    transaction = Transaction.query.get_or_404(transaction_id)
+    with app.app_context():
+        db.create_all()
+        ensure_user_goal_column()
 
-    if transaction.user_id != session["user_id"]:
-        flash("Você não tem permissão para excluir esta transação.")
-        return redirect(url_for("transactions"))
-
-    db.session.delete(transaction)
-    db.session.commit()
-
-    flash("Transação excluída com sucesso!")
-    return redirect(url_for("transactions"))
+    return app
 
 
-@app.route("/logout")
-@app.route("/logout/")
-def logout():
-    session.clear()
-    flash("Você saiu da conta com sucesso.")
-    return redirect(url_for("login"))
-
-
-with app.app_context():
-    db.create_all()
-    ensure_user_goal_column()
+app = create_app()
 
 
 if __name__ == "__main__":
