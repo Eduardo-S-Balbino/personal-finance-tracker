@@ -11,6 +11,7 @@ import os
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "minha_chave_secreta")
+app.url_map.strict_slashes = False
 
 database_url = os.environ.get("DATABASE_URL")
 
@@ -246,13 +247,11 @@ def home():
 
 
 @app.route("/teste")
-@app.route("/teste/")
 def teste():
     return "ok"
 
 
 @app.route("/demo-login")
-@app.route("/demo-login/")
 def demo_login():
     demo_user = create_demo_account()
 
@@ -264,7 +263,6 @@ def demo_login():
 
 
 @app.route("/login", methods=["GET", "POST"])
-@app.route("/login/", methods=["GET", "POST"])
 def login():
     if "user_id" in session:
         return redirect(url_for("dashboard"))
@@ -292,7 +290,6 @@ def login():
 
 
 @app.route("/register", methods=["GET", "POST"])
-@app.route("/register/", methods=["GET", "POST"])
 def register():
     if "user_id" in session:
         return redirect(url_for("dashboard"))
@@ -340,7 +337,6 @@ def register():
 
 
 @app.route("/update-goal", methods=["POST"])
-@app.route("/update-goal/", methods=["POST"])
 def update_goal():
     if "user_id" not in session:
         flash("Faça login para atualizar sua meta.")
@@ -362,7 +358,6 @@ def update_goal():
 
 
 @app.route("/dashboard")
-@app.route("/dashboard/")
 def dashboard():
     if "user_id" not in session:
         flash("Faça login para acessar o dashboard.")
@@ -523,7 +518,6 @@ def dashboard():
 
 
 @app.route("/add_transaction", methods=["GET", "POST"])
-@app.route("/add_transaction/", methods=["GET", "POST"])
 def add_transaction():
     if "user_id" not in session:
         flash("Faça login para adicionar uma transação.")
@@ -583,7 +577,6 @@ def add_transaction():
 
 
 @app.route("/transactions")
-@app.route("/transactions/")
 def transactions():
     if "user_id" not in session:
         flash("Faça login para visualizar suas transações.")
@@ -627,7 +620,6 @@ def transactions():
 
 
 @app.route("/export_transactions_csv")
-@app.route("/export_transactions_csv/")
 def export_transactions_csv():
     if "user_id" not in session:
         flash("Faça login para exportar suas transações.")
@@ -675,7 +667,6 @@ def export_transactions_csv():
 
 
 @app.route("/edit_transaction/<int:transaction_id>", methods=["GET", "POST"])
-@app.route("/edit_transaction/<int:transaction_id>/", methods=["GET", "POST"])
 def edit_transaction(transaction_id):
     if "user_id" not in session:
         flash("Faça login para editar uma transação.")
@@ -734,7 +725,6 @@ def edit_transaction(transaction_id):
 
 
 @app.route("/delete_transaction/<int:transaction_id>", methods=["POST"])
-@app.route("/delete_transaction/<int:transaction_id>/", methods=["POST"])
 def delete_transaction(transaction_id):
     if "user_id" not in session:
         flash("Faça login para excluir uma transação.")
@@ -754,7 +744,6 @@ def delete_transaction(transaction_id):
 
 
 @app.route("/logout")
-@app.route("/logout/")
 def logout():
     session.clear()
     flash("Você saiu da conta com sucesso.")
