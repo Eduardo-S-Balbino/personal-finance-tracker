@@ -59,6 +59,39 @@
     {% else %}
         <p class="goal-message warning">Ainda não houve economia positiva neste mês.</p>
     {% endif %}
+
+    <div class="goal-actions">
+        <p>Escolha sua meta:</p>
+
+        <form method="POST" action="{{ url_for('update_goal') }}" class="goal-buttons">
+            <button
+                type="submit"
+                name="goal_percentage"
+                value="10"
+                class="goal-btn {% if goal_percentage == 10 %}active{% endif %}"
+            >
+                10%
+            </button>
+
+            <button
+                type="submit"
+                name="goal_percentage"
+                value="20"
+                class="goal-btn {% if goal_percentage == 20 %}active{% endif %}"
+            >
+                20%
+            </button>
+
+            <button
+                type="submit"
+                name="goal_percentage"
+                value="30"
+                class="goal-btn {% if goal_percentage == 30 %}active{% endif %}"
+            >
+                30%
+            </button>
+        </form>
+    </div>
 </section>
 
 <section class="filter-section">

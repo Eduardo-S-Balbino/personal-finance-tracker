@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, Response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import inspect, text
 from datetime import datetime, date
 from calendar import monthrange
 from types import SimpleNamespace
@@ -28,6 +29,7 @@ class User(db.Model):
     username = db.Column(db.String(100), nullable=False, unique=True)
     email = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(200), nullable=False)
+    goal_percentage = db.Column(db.Float, nullable=False, default=20)
 
     transactions = db.relationship("Transaction", backref="user", lazy=True)
 
@@ -45,6 +47,17 @@ class Transaction(db.Model):
     recurrence_type = db.Column(db.String(20), nullable=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+
+def ensure_user_goal_column():
+    inspector = inspect(db.engine)
+    columns = [column["name"] for column in inspector.get_columns("user")]
+
+    if "goal_percentage" not in columns:
+        with db.engine.begin() as connection:
+            connection.execute(
+                text('ALTER TABLE "user" ADD COLUMN goal_percentage FLOAT DEFAULT 20')
+            )
 
 
 def build_effective_transactions(raw_transactions, target_month, target_year):
@@ -148,7 +161,8 @@ def create_demo_account():
         demo_user = User(
             username=demo_username,
             email=demo_email,
-            password=generate_password_hash(demo_password)
+            password=generate_password_hash(demo_password),
+            goal_percentage=20
         )
 
         db.session.add(demo_user)
@@ -309,7 +323,13 @@ def register():
 
         hashed_password = generate_password_hash(password)
 
-        new_user = User(username=username, email=email, password=hashed_password)
+        new_user = User(
+            username=username,
+            email=email,
+            password=hashed_password,
+            goal_percentage=20
+        )
+
         db.session.add(new_user)
         db.session.commit()
 
@@ -319,12 +339,36 @@ def register():
     return render_template("register.html")
 
 
+@app.route("/update-goal", methods=["POST"])
+@app.route("/update-goal/", methods=["POST"])
+def update_goal():
+    if "user_id" not in session:
+        flash("Faça login para atualizar sua meta.")
+        return redirect(url_for("login"))
+
+    goal_percentage = request.form.get("goal_percentage", type=float)
+
+    if goal_percentage not in [10.0, 20.0, 30.0]:
+        flash("Escolha uma meta válida.")
+        return redirect(url_for("dashboard"))
+
+    user = User.query.get_or_404(session["user_id"])
+    user.goal_percentage = goal_percentage
+
+    db.session.commit()
+
+    flash("Meta financeira atualizada com sucesso!")
+    return redirect(url_for("dashboard"))
+
+
 @app.route("/dashboard")
 @app.route("/dashboard/")
 def dashboard():
     if "user_id" not in session:
         flash("Faça login para acessar o dashboard.")
         return redirect(url_for("login"))
+
+    current_user = User.query.get_or_404(session["user_id"])
 
     current_date = datetime.today()
 
@@ -373,7 +417,7 @@ def dashboard():
     if total_income > 0:
         savings_rate = ((balance / total_income) * 100)
 
-    goal_percentage = 20
+    goal_percentage = current_user.goal_percentage or 20
 
     goal_progress = 0
     if savings_rate > 0:
@@ -719,6 +763,7 @@ def logout():
 
 with app.app_context():
     db.create_all()
+    ensure_user_goal_column()
 
 
 if __name__ == "__main__":

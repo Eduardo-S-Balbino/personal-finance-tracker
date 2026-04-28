@@ -591,3 +591,40 @@ body {
     color: #dc2626;
     font-weight: bold;
 }
+/* 🔥 BOTÕES DE META */
+
+.goal-actions {
+    margin-top: 20px;
+}
+
+.goal-actions p {
+    margin-bottom: 10px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.goal-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.goal-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background-color: #f9fafb;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.goal-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.goal-btn.active {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+}
