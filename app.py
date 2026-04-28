@@ -9,7 +9,14 @@ import csv
 import io
 import os
 
-app = Flask(__name__)
+base_dir = os.path.abspath(os.path.dirname(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(base_dir, "templates"),
+    static_folder=os.path.join(base_dir, "static")
+)
+
 app.secret_key = os.environ.get("SECRET_KEY", "minha_chave_secreta")
 app.url_map.strict_slashes = False
 
@@ -754,7 +761,6 @@ with app.app_context():
     db.create_all()
     ensure_user_goal_column()
 
-print("Rotas registradas:")
-print(app.url_map)
+
 if __name__ == "__main__":
     app.run(debug=True)
