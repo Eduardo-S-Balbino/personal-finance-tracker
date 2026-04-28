@@ -754,6 +754,7 @@ with app.app_context():
     db.create_all()
     ensure_user_goal_column()
 
-
+print("Rotas registradas:")
+print(app.url_map)
 if __name__ == "__main__":
     app.run(debug=True)
