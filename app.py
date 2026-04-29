@@ -221,22 +221,27 @@ def create_app():
 
     db.init_app(app)
 
+    def get_current_user():
+        if "user_id" not in session:
+            return None
+
+        user = User.query.get(session["user_id"])
+
+        if not user:
+            session.clear()
+            flash("Sua sessão expirou. Faça login novamente.")
+            return None
+
+        return user
+
     @app.route("/")
     def home():
-        if "user_id" in session:
+        current_user = get_current_user()
+
+        if current_user:
             return redirect(url_for("dashboard"))
 
         return redirect(url_for("login"))
-
-    @app.route("/teste")
-    @app.route("/teste/")
-    def teste():
-        routes = []
-
-        for rule in app.url_map.iter_rules():
-            routes.append(f"{rule.endpoint}: {rule.rule}")
-
-        return "<br>".join(sorted(routes))
 
     @app.route("/demo-login")
     @app.route("/demo-login/")
@@ -252,7 +257,9 @@ def create_app():
     @app.route("/login", methods=["GET", "POST"])
     @app.route("/login/", methods=["GET", "POST"])
     def login():
-        if "user_id" in session:
+        current_user = get_current_user()
+
+        if current_user:
             return redirect(url_for("dashboard"))
 
         if request.method == "POST":
@@ -279,7 +286,9 @@ def create_app():
     @app.route("/register", methods=["GET", "POST"])
     @app.route("/register/", methods=["GET", "POST"])
     def register():
-        if "user_id" in session:
+        current_user = get_current_user()
+
+        if current_user:
             return redirect(url_for("dashboard"))
 
         if request.method == "POST":
@@ -326,8 +335,9 @@ def create_app():
     @app.route("/update-goal", methods=["POST"])
     @app.route("/update-goal/", methods=["POST"])
     def update_goal():
-        if "user_id" not in session:
-            flash("Faça login para atualizar sua meta.")
+        current_user = get_current_user()
+
+        if not current_user:
             return redirect(url_for("login"))
 
         goal_percentage = request.form.get("goal_percentage", type=float)
@@ -336,8 +346,7 @@ def create_app():
             flash("Escolha uma meta válida.")
             return redirect(url_for("dashboard"))
 
-        user = User.query.get_or_404(session["user_id"])
-        user.goal_percentage = goal_percentage
+        current_user.goal_percentage = goal_percentage
 
         db.session.commit()
 
@@ -347,11 +356,10 @@ def create_app():
     @app.route("/dashboard")
     @app.route("/dashboard/")
     def dashboard():
-        if "user_id" not in session:
-            flash("Faça login para acessar o dashboard.")
-            return redirect(url_for("login"))
+        current_user = get_current_user()
 
-        current_user = User.query.get_or_404(session["user_id"])
+        if not current_user:
+            return redirect(url_for("login"))
 
         current_date = datetime.today()
 
@@ -361,7 +369,7 @@ def create_app():
         selected_category = request.args.get("category", default="")
 
         raw_transactions = Transaction.query.filter_by(
-            user_id=session["user_id"]
+            user_id=current_user.id
         ).order_by(Transaction.date.desc()).all()
 
         monthly_transactions = build_effective_transactions(
@@ -482,7 +490,7 @@ def create_app():
 
         return render_template(
             "dashboard.html",
-            username=session["username"],
+            username=current_user.username,
             total_income=total_income,
             total_expense=total_expense,
             balance=balance,
@@ -507,8 +515,9 @@ def create_app():
     @app.route("/add_transaction", methods=["GET", "POST"])
     @app.route("/add_transaction/", methods=["GET", "POST"])
     def add_transaction():
-        if "user_id" not in session:
-            flash("Faça login para adicionar uma transação.")
+        current_user = get_current_user()
+
+        if not current_user:
             return redirect(url_for("login"))
 
         if request.method == "POST":
@@ -552,7 +561,7 @@ def create_app():
                 description=description,
                 is_recurring=is_recurring,
                 recurrence_type=recurrence_type,
-                user_id=session["user_id"]
+                user_id=current_user.id
             )
 
             db.session.add(new_transaction)
@@ -566,11 +575,12 @@ def create_app():
     @app.route("/transactions")
     @app.route("/transactions/")
     def transactions():
-        if "user_id" not in session:
-            flash("Faça login para visualizar suas transações.")
+        current_user = get_current_user()
+
+        if not current_user:
             return redirect(url_for("login"))
 
-        data = get_filtered_transactions_for_user(session["user_id"])
+        data = get_filtered_transactions_for_user(current_user.id)
         all_transactions = data["transactions"]
 
         page = request.args.get("page", default=1, type=int)
@@ -609,11 +619,12 @@ def create_app():
     @app.route("/export_transactions_csv")
     @app.route("/export_transactions_csv/")
     def export_transactions_csv():
-        if "user_id" not in session:
-            flash("Faça login para exportar suas transações.")
+        current_user = get_current_user()
+
+        if not current_user:
             return redirect(url_for("login"))
 
-        data = get_filtered_transactions_for_user(session["user_id"])
+        data = get_filtered_transactions_for_user(current_user.id)
         transactions = data["transactions"]
 
         output = io.StringIO()
@@ -656,13 +667,14 @@ def create_app():
     @app.route("/edit_transaction/<int:transaction_id>", methods=["GET", "POST"])
     @app.route("/edit_transaction/<int:transaction_id>/", methods=["GET", "POST"])
     def edit_transaction(transaction_id):
-        if "user_id" not in session:
-            flash("Faça login para editar uma transação.")
+        current_user = get_current_user()
+
+        if not current_user:
             return redirect(url_for("login"))
 
         transaction = Transaction.query.get_or_404(transaction_id)
 
-        if transaction.user_id != session["user_id"]:
+        if transaction.user_id != current_user.id:
             flash("Você não tem permissão para editar esta transação.")
             return redirect(url_for("transactions"))
 
@@ -714,13 +726,14 @@ def create_app():
     @app.route("/delete_transaction/<int:transaction_id>", methods=["POST"])
     @app.route("/delete_transaction/<int:transaction_id>/", methods=["POST"])
     def delete_transaction(transaction_id):
-        if "user_id" not in session:
-            flash("Faça login para excluir uma transação.")
+        current_user = get_current_user()
+
+        if not current_user:
             return redirect(url_for("login"))
 
         transaction = Transaction.query.get_or_404(transaction_id)
 
-        if transaction.user_id != session["user_id"]:
+        if transaction.user_id != current_user.id:
             flash("Você não tem permissão para excluir esta transação.")
             return redirect(url_for("transactions"))
 
