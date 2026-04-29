@@ -162,8 +162,11 @@ personal-finance-tracker/
 ├── assets/
 │   ├── 1-home.png
 │   ├── 2-dashboard-summary.png
-│   ├── 3-dashboard-chart.png
-│   └── 4-transactions.png
+│   ├── 3-dashboard-summary.png
+│   ├── 4-dashboard-chart.png
+│   ├── 5-dashboard-chart.png
+│   ├── 6-transactions.png
+│   └── 7-transactions.png
 │
 ├── templates/
 │   ├── base.html
@@ -255,26 +258,47 @@ gunicorn app:app
 
 O sistema possui as seguintes telas principais:
 
-- Página inicial
 - Login
-- Cadastro
+- Acesso demo
 - Dashboard financeiro
-- Adicionar transação
-- Editar transação
+- Meta financeira
+- Gráficos financeiros
+- Últimas transações
 - Lista de transações
+- Filtros avançados
 - Exportação CSV
 
 ---
 
 ## 📸 Preview
 
-![Home](assets/1-home.png)
+### Login e acesso demo
 
-![Dashboard - Resumo](assets/2-dashboard-summary.png)
+![Login e acesso demo](assets/1-home.png)
 
-![Dashboard - Gráfico](assets/3-dashboard-chart.png)
+### Dashboard - Resumo inicial
 
-![Transações](assets/4-transactions.png)
+![Dashboard - Resumo inicial](assets/2-dashboard-summary.png)
+
+### Dashboard - Meta financeira e indicadores
+
+![Dashboard - Meta financeira e indicadores](assets/3-dashboard-summary.png)
+
+### Dashboard - Gráficos financeiros
+
+![Dashboard - Gráficos financeiros](assets/4-dashboard-chart.png)
+
+### Dashboard - Últimas transações
+
+![Dashboard - Últimas transações](assets/5-dashboard-chart.png)
+
+### Transações - Filtros e exportação
+
+![Transações - Filtros e exportação](assets/6-transactions.png)
+
+### Transações - Lista completa
+
+![Transações - Lista completa](assets/7-transactions.png)
 
 ---
 
