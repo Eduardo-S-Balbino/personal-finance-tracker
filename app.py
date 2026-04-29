@@ -231,7 +231,12 @@ def create_app():
     @app.route("/teste")
     @app.route("/teste/")
     def teste():
-        return "ok"
+        routes = []
+
+        for rule in app.url_map.iter_rules():
+            routes.append(f"{rule.endpoint}: {rule.rule}")
+
+        return "<br>".join(sorted(routes))
 
     @app.route("/demo-login")
     @app.route("/demo-login/")
