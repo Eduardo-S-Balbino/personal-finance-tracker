@@ -628,3 +628,20 @@ body {
     color: white;
     border: none;
 }
+.transaction-type {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.transaction-type.receita {
+    color: #166534;
+    background-color: #dcfce7;
+}
+
+.transaction-type.despesa {
+    color: #991b1b;
+    background-color: #fee2e2;
+}

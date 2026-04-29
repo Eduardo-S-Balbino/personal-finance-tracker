@@ -3,6 +3,7 @@
 {% block content %}
 <section class="transactions-section">
     <h1>Minhas transações</h1>
+    <p class="section-description">Visualize, filtre, edite e exporte suas movimentações financeiras.</p>
 
     <section class="filter-section">
         <form method="GET" action="{{ url_for('transactions') }}" class="filter-form">
@@ -69,7 +70,11 @@
 
             <div class="filter-buttons">
                 <button type="submit" class="btn">Filtrar</button>
-                <a href="{{ url_for('transactions') }}" class="btn btn-secondary">Limpar filtro</a>
+
+                <a href="{{ url_for('transactions') }}" class="btn btn-secondary">
+                    Limpar filtro
+                </a>
+
                 <a
                     href="{{ url_for('export_transactions_csv', month=selected_month, year=selected_year, type=selected_type, category=selected_category, search=search_title) }}"
                     class="btn"
@@ -95,13 +100,24 @@
                         <th>Ações</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {% for transaction in transactions %}
                         <tr>
                             <td>{{ transaction.title }}</td>
-                            <td>R$ {{ "%.2f"|format(transaction.amount) }}</td>
-                            <td>{{ transaction.type }}</td>
+
+                            <td>
+                                R$ {{ "%.2f"|format(transaction.amount) }}
+                            </td>
+
+                            <td>
+                                <span class="transaction-type {{ transaction.type }}">
+                                    {{ transaction.type|capitalize }}
+                                </span>
+                            </td>
+
                             <td>{{ transaction.category }}</td>
+
                             <td>
                                 {% if transaction.is_recurring and transaction.recurrence_type == "monthly" %}
                                     Mensal
@@ -109,15 +125,24 @@
                                     Única
                                 {% endif %}
                             </td>
+
                             <td>{{ transaction.date.strftime("%d/%m/%Y") }}</td>
-                            <td>{{ transaction.description if transaction.description else "-" }}</td>
+
+                            <td>
+                                {{ transaction.description if transaction.description else "-" }}
+                            </td>
+
                             <td class="actions-cell">
                                 <a href="{{ url_for('edit_transaction', transaction_id=transaction.id) }}" class="btn-action edit-btn">
                                     Editar
                                 </a>
 
                                 <form action="{{ url_for('delete_transaction', transaction_id=transaction.id) }}" method="POST" class="delete-form">
-                                    <button type="submit" class="btn-action delete-btn" onclick="return confirm('Tem certeza que deseja excluir esta transação?')">
+                                    <button
+                                        type="submit"
+                                        class="btn-action delete-btn"
+                                        onclick="return confirm('Tem certeza que deseja excluir esta transação?')"
+                                    >
                                         Excluir
                                     </button>
                                 </form>

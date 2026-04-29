@@ -64,30 +64,15 @@
         <p>Escolha sua meta:</p>
 
         <form method="POST" action="{{ url_for('update_goal') }}" class="goal-buttons">
-            <button
-                type="submit"
-                name="goal_percentage"
-                value="10"
-                class="goal-btn {% if goal_percentage == 10 %}active{% endif %}"
-            >
+            <button type="submit" name="goal_percentage" value="10" class="goal-btn {% if goal_percentage == 10 %}active{% endif %}">
                 10%
             </button>
 
-            <button
-                type="submit"
-                name="goal_percentage"
-                value="20"
-                class="goal-btn {% if goal_percentage == 20 %}active{% endif %}"
-            >
+            <button type="submit" name="goal_percentage" value="20" class="goal-btn {% if goal_percentage == 20 %}active{% endif %}">
                 20%
             </button>
 
-            <button
-                type="submit"
-                name="goal_percentage"
-                value="30"
-                class="goal-btn {% if goal_percentage == 30 %}active{% endif %}"
-            >
+            <button type="submit" name="goal_percentage" value="30" class="goal-btn {% if goal_percentage == 30 %}active{% endif %}">
                 30%
             </button>
         </form>
@@ -116,13 +101,7 @@
 
         <div class="filter-group">
             <label for="year">Ano</label>
-            <input
-                type="number"
-                id="year"
-                name="year"
-                placeholder="Ex: 2026"
-                value="{{ selected_year }}"
-            >
+            <input type="number" id="year" name="year" placeholder="Ex: 2026" value="{{ selected_year }}">
         </div>
 
         <div class="filter-group">
@@ -230,7 +209,11 @@
                         <tr>
                             <td>{{ transaction.title }}</td>
                             <td>R$ {{ "%.2f"|format(transaction.amount) }}</td>
-                            <td>{{ transaction.type }}</td>
+                            <td>
+                                <span class="transaction-type {{ transaction.type }}">
+                                    {{ transaction.type|capitalize }}
+                                </span>
+                            </td>
                             <td>{{ transaction.category }}</td>
                             <td>{{ transaction.date.strftime("%d/%m/%Y") }}</td>
                         </tr>
@@ -253,6 +236,22 @@
     const monthlyIncomeValues = {{ monthly_income_values|tojson }};
     const monthlyExpenseValues = {{ monthly_expense_values|tojson }};
 
+    const chartColors = {
+        income: "#16a34a",
+        incomeBackground: "rgba(22, 163, 74, 0.12)",
+        expense: "#dc2626",
+        expenseBackground: "rgba(220, 38, 38, 0.12)",
+        text: "#334155",
+        grid: "rgba(148, 163, 184, 0.25)"
+    };
+
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        }).format(value);
+    };
+
     const monthlyEvolutionCanvas = document.getElementById("monthlyEvolutionChart");
 
     if (monthlyEvolutionCanvas) {
@@ -266,18 +265,22 @@
                     {
                         label: "Receitas",
                         data: monthlyIncomeValues,
-                        borderColor: "#16a34a",
-                        backgroundColor: "rgba(22, 163, 74, 0.12)",
+                        borderColor: chartColors.income,
+                        backgroundColor: chartColors.incomeBackground,
                         borderWidth: 3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
                         tension: 0.35,
                         fill: true
                     },
                     {
                         label: "Despesas",
                         data: monthlyExpenseValues,
-                        borderColor: "#dc2626",
-                        backgroundColor: "rgba(220, 38, 38, 0.12)",
+                        borderColor: chartColors.expense,
+                        backgroundColor: chartColors.expenseBackground,
                         borderWidth: 3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
                         tension: 0.35,
                         fill: true
                     }
@@ -285,14 +288,44 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: "bottom"
+                        position: "bottom",
+                        labels: {
+                            color: chartColors.text,
+                            usePointStyle: true,
+                            padding: 18
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
+                            }
+                        }
                     }
                 },
                 scales: {
+                    x: {
+                        ticks: {
+                            color: chartColors.text
+                        },
+                        grid: {
+                            color: chartColors.grid
+                        }
+                    },
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            color: chartColors.text,
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        },
+                        grid: {
+                            color: chartColors.grid
+                        }
                     }
                 }
             }
@@ -305,42 +338,62 @@
     const chartLabels = {{ chart_labels|tojson }};
     const chartValues = {{ chart_values|tojson }};
 
-    const categoryColors = {
-        "Alimentação": "#22c55e",
-        "Transporte": "#3b82f6",
-        "Moradia": "#ef4444",
-        "Saúde": "#a855f7",
-        "Educação": "#eab308",
-        "Lazer": "#f97316",
-        "Salário": "#16a34a",
-        "Freelance": "#64748b",
-        "Outros": "#06b6d4"
+    const expenseCategoryColors = {
+        "Alimentação": "#f97316",
+        "Transporte": "#0ea5e9",
+        "Moradia": "#6366f1",
+        "Saúde": "#ec4899",
+        "Educação": "#8b5cf6",
+        "Lazer": "#f59e0b",
+        "Outros": "#64748b"
     };
 
-    const backgroundColors = chartLabels.map(label => categoryColors[label] || "#94a3b8");
+    const expenseBackgroundColors = chartLabels.map(label => {
+        return expenseCategoryColors[label] || "#94a3b8";
+    });
 
-    const ctx = document.getElementById("expenseChart").getContext("2d");
+    const expenseChartCanvas = document.getElementById("expenseChart");
 
-    new Chart(ctx, {
-        type: "doughnut",
-        data: {
-            labels: chartLabels,
-            datasets: [{
-                label: "Despesas por categoria",
-                data: chartValues,
-                backgroundColor: backgroundColors,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: "bottom"
+    if (expenseChartCanvas) {
+        const expenseChartContext = expenseChartCanvas.getContext("2d");
+
+        new Chart(expenseChartContext, {
+            type: "doughnut",
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: "Despesas por categoria",
+                    data: chartValues,
+                    backgroundColor: expenseBackgroundColors,
+                    borderColor: "#ffffff",
+                    borderWidth: 2,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "62%",
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: {
+                            color: "#334155",
+                            usePointStyle: true,
+                            padding: 18
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${formatCurrency(context.raw)}`;
+                            }
+                        }
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 </script>
 {% endif %}
 {% endblock %}

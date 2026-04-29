@@ -3,23 +3,38 @@
 {% block content %}
 <section class="form-section">
     <h1>Editar transação</h1>
+    <p class="section-description">Atualize os dados da movimentação financeira selecionada.</p>
 
     <form class="form-card" method="POST">
         <label for="title">Título</label>
-        <input type="text" id="title" name="title" value="{{ transaction.title }}">
+        <input 
+            type="text" 
+            id="title" 
+            name="title" 
+            value="{{ transaction.title }}"
+            required
+        >
 
         <label for="amount">Valor</label>
-        <input type="number" step="0.01" id="amount" name="amount" value="{{ transaction.amount }}">
+        <input 
+            type="number" 
+            step="0.01" 
+            min="0.01"
+            id="amount" 
+            name="amount" 
+            value="{{ transaction.amount }}"
+            required
+        >
 
         <label for="type">Tipo</label>
-        <select id="type" name="type">
+        <select id="type" name="type" required>
             <option value="">Selecione</option>
             <option value="receita" {% if transaction.type == "receita" %}selected{% endif %}>Receita</option>
             <option value="despesa" {% if transaction.type == "despesa" %}selected{% endif %}>Despesa</option>
         </select>
 
         <label for="category">Categoria</label>
-        <select id="category" name="category">
+        <select id="category" name="category" required>
             <option value="">Selecione uma categoria</option>
             <option value="Alimentação" {% if transaction.category == "Alimentação" %}selected{% endif %}>Alimentação</option>
             <option value="Transporte" {% if transaction.category == "Transporte" %}selected{% endif %}>Transporte</option>
@@ -33,19 +48,33 @@
         </select>
 
         <label for="recurrence">Recorrência</label>
-        <select id="recurrence" name="recurrence">
+        <select id="recurrence" name="recurrence" required>
             <option value="">Selecione</option>
             <option value="unique" {% if not transaction.is_recurring %}selected{% endif %}>Única</option>
             <option value="monthly" {% if transaction.recurrence_type == "monthly" %}selected{% endif %}>Mensal</option>
         </select>
 
         <label for="date">Data</label>
-        <input type="date" id="date" name="date" value="{{ transaction.date.strftime('%Y-%m-%d') }}">
+        <input 
+            type="date" 
+            id="date" 
+            name="date" 
+            value="{{ transaction.date.strftime('%Y-%m-%d') }}"
+            required
+        >
 
         <label for="description">Descrição</label>
-        <textarea id="description" name="description" rows="4">{{ transaction.description if transaction.description else "" }}</textarea>
+        <textarea 
+            id="description" 
+            name="description" 
+            rows="4"
+            placeholder="Observação opcional"
+        >{{ transaction.description if transaction.description else "" }}</textarea>
 
-        <button type="submit" class="btn">Salvar alterações</button>
+        <div class="form-actions">
+            <button type="submit" class="btn">Salvar alterações</button>
+            <a href="{{ url_for('transactions') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
     </form>
 </section>
 {% endblock %}

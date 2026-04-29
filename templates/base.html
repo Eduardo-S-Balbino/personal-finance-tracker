@@ -9,17 +9,19 @@
 <body>
     <header>
         <nav class="navbar">
-            <h2 class="logo">Finance Tracker</h2>
+            <a href="{{ url_for('home') }}" class="logo">Finance Tracker</a>
 
             <div class="nav-links">
                 <a href="{{ url_for('home') }}">Início</a>
 
                 {% if "user_id" in session %}
                     <a href="{{ url_for('dashboard') }}">Dashboard</a>
-                    <a href="{{ url_for('logout') }}">Logout</a>
+                    <a href="{{ url_for('transactions') }}">Transações</a>
+                    <a href="{{ url_for('add_transaction') }}">Adicionar</a>
+                    <a href="{{ url_for('logout') }}" class="nav-logout">Sair</a>
                 {% else %}
                     <a href="{{ url_for('login') }}">Login</a>
-                    <a href="{{ url_for('register') }}">Cadastrar</a>
+                    <a href="{{ url_for('register') }}" class="nav-register">Cadastrar</a>
                 {% endif %}
             </div>
         </nav>
@@ -28,11 +30,13 @@
     <main class="container">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                {% for message in messages %}
-                    <div class="flash-message">
-                        {{ message }}
-                    </div>
-                {% endfor %}
+                <section class="flash-container">
+                    {% for message in messages %}
+                        <div class="flash-message">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </section>
             {% endif %}
         {% endwith %}
 
