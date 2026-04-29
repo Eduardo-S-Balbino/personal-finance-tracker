@@ -1,71 +1,132 @@
 # 💰 Personal Finance Tracker
 
-Um sistema web de controle financeiro pessoal desenvolvido com **Python**, **Flask** e **SQLite**, com foco em organização de receitas e despesas, visualização de saldo, filtros avançados, recorrência mensal, exportação de dados e dashboard com gráfico.
+Sistema web de controle financeiro pessoal desenvolvido com **Python**, **Flask**, **SQLAlchemy**, **SQLite**, **PostgreSQL**, **Jinja2**, **CSS** e **Chart.js**.
+
+O projeto permite organizar receitas e despesas, acompanhar saldo, visualizar gráficos, aplicar filtros avançados, registrar transações recorrentes, definir metas financeiras, receber alertas do mês, exportar dados em CSV e acessar uma conta demo para teste.
+
+---
+
+## 🔗 Acesse o projeto online
+
+🌐 **Deploy:** [https://personal-finance-tracker-wrlj.onrender.com](https://personal-finance-tracker-wrlj.onrender.com)
 
 ---
 
 ## 📌 Sobre o projeto
 
-O **Personal Finance Tracker** foi criado para ajudar usuários a registrarem e acompanharem suas movimentações financeiras de forma simples, organizada e prática.
+O **Personal Finance Tracker** foi criado para ajudar usuários a registrarem e acompanharem suas movimentações financeiras de forma simples, clara e organizada.
 
-O sistema permite cadastrar receitas e despesas, aplicar filtros por período, tipo e categoria, visualizar resumos financeiros em um dashboard, trabalhar com transações recorrentes mensais, buscar lançamentos por título, paginar resultados e exportar dados em CSV.
+A aplicação conta com autenticação de usuários, dashboard financeiro, CRUD completo de transações, filtros combinados, busca por título, recorrência mensal, exportação CSV, metas de economia, alertas financeiros e visualização gráfica dos dados.
 
-Este projeto foi desenvolvido como parte da construção do meu portfólio em desenvolvimento web com Python, mostrando evolução em relação a projetos anteriores ao incluir autenticação, regras de negócio mais reais, dashboard analítico, filtros combinados, busca, paginação e exportação de dados.
+Este projeto faz parte da construção do meu portfólio como desenvolvedor, demonstrando evolução em relação a projetos anteriores ao incluir regras de negócio mais completas, autenticação, banco de dados, dashboard analítico, deploy em produção e preocupação com responsividade.
 
 ---
 
 ## 🚀 Funcionalidades
 
 ### 👤 Autenticação de usuários
+
 - Cadastro de conta
 - Login
 - Logout
 - Controle de sessão
 - Proteção de rotas privadas
+- Tratamento de sessão expirada
+- Senhas armazenadas com hash
+
+### 🧪 Usuário demo
+
+O sistema possui uma opção de acesso rápido com usuário demo.
+
+Com ela, é possível testar a aplicação sem criar uma conta manualmente.
 
 ### 💸 Gerenciamento de transações
+
 - Adicionar transações
 - Editar transações
 - Excluir transações
 - Listar transações
-- Cadastro de receitas e despesas
+- Cadastro de receitas
+- Cadastro de despesas
+- Descrição opcional
+- Categorias padronizadas
+- Validação de campos obrigatórios
 
 ### ♻️ Recorrência mensal
-- Transações podem ser definidas como:
-  - Única
-  - Mensal
-- Transações mensais continuam sendo consideradas nos meses seguintes no dashboard e nos filtros
+
+As transações podem ser cadastradas como:
+
+- Única
+- Mensal
+
+Transações mensais continuam sendo consideradas nos meses seguintes, permitindo simular receitas e despesas recorrentes como salário, aluguel, internet e assinaturas.
 
 ### 📊 Dashboard financeiro
+
+O dashboard apresenta:
+
 - Total de receitas
 - Total de despesas
 - Saldo final
+- Taxa de economia
 - Últimas transações
+- Resumo financeiro do mês
+- Maior categoria de gasto
+- Gráfico de evolução mensal
 - Gráfico de despesas por categoria
+
+### 🎯 Metas financeiras
+
+O usuário pode escolher uma meta de economia mensal:
+
+- 10%
+- 20%
+- 30%
+
+O sistema calcula o progresso da meta com base na taxa de economia do mês selecionado.
+
+### ⚠️ Alertas inteligentes
+
+O sistema exibe alertas quando identifica situações importantes, como:
+
+- Gastos maiores que receitas
+- Aumento de despesas em relação ao mês anterior
+- Categoria concentrando grande parte dos gastos
 
 ### 🔎 Filtros e busca
 
-#### No dashboard:
+#### No dashboard
+
 - Filtro por mês
 - Filtro por ano
 - Filtro por tipo
 - Filtro por categoria
 
-#### Na página de transações:
+#### Na página de transações
+
 - Filtro por mês
 - Filtro por ano
 - Filtro por tipo
 - Filtro por categoria
 - Busca por título
 
-### 📄 Exportação
-- Exportação das transações filtradas para arquivo **CSV**
+### 📄 Exportação CSV
 
-### 📚 Organização e usabilidade
-- Categorias padronizadas
-- Paginação na lista de transações
-- Interface web organizada
-- Mensagens de feedback para ações do usuário
+O usuário pode exportar as transações filtradas para um arquivo **CSV**.
+
+A exportação respeita os filtros aplicados na tela de transações.
+
+### 📱 Responsividade
+
+A interface foi ajustada para diferentes tamanhos de tela, incluindo desktop e mobile.
+
+Foram feitos ajustes específicos para:
+
+- navegação em telas menores;
+- cards do dashboard;
+- tabelas com rolagem horizontal;
+- gráficos responsivos;
+- exibição dos meses no gráfico de evolução mensal.
 
 ---
 
@@ -74,42 +135,49 @@ Este projeto foi desenvolvido como parte da construção do meu portfólio em de
 - **Python**
 - **Flask**
 - **Flask-SQLAlchemy**
-- **HTML**
-- **CSS**
-- **Jinja2**
+- **SQLAlchemy**
 - **SQLite**
+- **PostgreSQL**
+- **HTML5**
+- **CSS3**
+- **Jinja2**
 - **JavaScript**
 - **Chart.js**
+- **Gunicorn**
+- **Render**
 
 ---
 
 ## 📂 Estrutura do projeto
 
-    personal-finance-tracker/
-    │
-    ├── app.py
-    ├── requirements.txt
-    ├── README.md
-    ├── .gitignore
-    │
-    ├── assets/
-    │   ├── 1-home.png
-    │   ├── 2-dashboard-summary.png
-    │   ├── 3-dashboard-chart.png
-    │   └── 4-transactions.png
-    │
-    ├── templates/
-    │   ├── base.html
-    │   ├── index.html
-    │   ├── login.html
-    │   ├── register.html
-    │   ├── dashboard.html
-    │   ├── add_transaction.html
-    │   ├── edit_transaction.html
-    │   └── transactions.html
-    │
-    └── static/
-        └── style.css
+```text
+personal-finance-tracker/
+│
+├── app.py
+├── models.py
+├── requirements.txt
+├── README.md
+├── .gitignore
+│
+├── assets/
+│   ├── 1-home.png
+│   ├── 2-dashboard-summary.png
+│   ├── 3-dashboard-chart.png
+│   └── 4-transactions.png
+│
+├── templates/
+│   ├── base.html
+│   ├── index.html
+│   ├── login.html
+│   ├── register.html
+│   ├── dashboard.html
+│   ├── add_transaction.html
+│   ├── edit_transaction.html
+│   └── transactions.html
+│
+└── static/
+    └── style.css
+```
 
 ---
 
@@ -117,31 +185,77 @@ Este projeto foi desenvolvido como parte da construção do meu portfólio em de
 
 ### 1. Clone o repositório
 
-    git clone <URL_DO_SEU_REPOSITORIO>
+```bash
+git clone https://github.com/Eduardo-S-Balbino/personal-finance-tracker.git
+```
 
 ### 2. Entre na pasta do projeto
 
-    cd personal-finance-tracker
+```bash
+cd personal-finance-tracker
+```
 
-### 3. Instale as dependências
+### 3. Crie um ambiente virtual
 
-    pip install -r requirements.txt
+```bash
+python -m venv venv
+```
 
-### 4. Execute a aplicação
+### 4. Ative o ambiente virtual
 
-    python app.py
+No Windows:
 
-### 5. Abra no navegador
+```bash
+venv\Scripts\activate
+```
 
-    http://127.0.0.1:5000
+No Linux/Mac:
+
+```bash
+source venv/bin/activate
+```
+
+### 5. Instale as dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+### 6. Execute a aplicação
+
+```bash
+python app.py
+```
+
+### 7. Abra no navegador
+
+```text
+http://127.0.0.1:5000
+```
+
+---
+
+## 🌐 Deploy
+
+O projeto foi publicado no **Render**.
+
+Em desenvolvimento local, a aplicação utiliza **SQLite**.
+
+Em produção, a aplicação pode utilizar **PostgreSQL** por meio da variável de ambiente `DATABASE_URL`.
+
+Comando de inicialização usado em produção:
+
+```bash
+gunicorn app:app
+```
 
 ---
 
 ## 📸 Telas do sistema
 
-O sistema possui páginas como:
+O sistema possui as seguintes telas principais:
 
-- Home
+- Página inicial
 - Login
 - Cadastro
 - Dashboard financeiro
@@ -150,11 +264,16 @@ O sistema possui páginas como:
 - Lista de transações
 - Exportação CSV
 
+---
+
 ## 📸 Preview
 
 ![Home](assets/1-home.png)
+
 ![Dashboard - Resumo](assets/2-dashboard-summary.png)
+
 ![Dashboard - Gráfico](assets/3-dashboard-chart.png)
+
 ![Transações](assets/4-transactions.png)
 
 ---
@@ -163,65 +282,87 @@ O sistema possui páginas como:
 
 Um usuário pode:
 
-1. Criar uma conta
-2. Fazer login no sistema
-3. Cadastrar receitas e despesas
-4. Marcar determinadas transações como mensais
-5. Visualizar o saldo atualizado no dashboard
-6. Aplicar filtros por mês, ano, tipo e categoria
-7. Buscar transações por título
-8. Navegar entre páginas da listagem
-9. Exportar as transações filtradas em CSV
+1. Criar uma conta ou entrar como usuário demo.
+2. Fazer login no sistema.
+3. Cadastrar receitas e despesas.
+4. Definir transações como únicas ou mensais.
+5. Visualizar receitas, despesas, saldo e taxa de economia no dashboard.
+6. Acompanhar a evolução mensal por gráfico.
+7. Ver despesas agrupadas por categoria.
+8. Definir uma meta de economia mensal.
+9. Receber alertas financeiros automáticos.
+10. Aplicar filtros por mês, ano, tipo e categoria.
+11. Buscar transações por título.
+12. Navegar entre páginas da listagem.
+13. Exportar as transações filtradas em CSV.
 
 ---
 
 ## 🧠 Regras de negócio implementadas
 
-- Cada usuário vê apenas as próprias transações
-- Rotas privadas exigem login
-- Senhas são armazenadas com hash
-- Transações recorrentes mensais continuam impactando meses futuros
-- O dashboard recalcula os valores com base nos filtros selecionados
-- O gráfico considera despesas agrupadas por categoria
-- A exportação CSV respeita os filtros aplicados
-- A busca por título funciona junto com os filtros existentes
-- A paginação organiza os resultados sem perder os filtros aplicados
+- Cada usuário visualiza apenas as próprias transações.
+- Rotas privadas exigem login.
+- Senhas são armazenadas com hash.
+- Sessões inválidas ou expiradas são tratadas sem quebrar a aplicação.
+- Transações recorrentes mensais continuam impactando meses futuros.
+- O dashboard recalcula os valores com base nos filtros selecionados.
+- A taxa de economia é calculada com base em receitas, despesas e saldo.
+- A meta financeira compara o percentual economizado com o objetivo escolhido.
+- Os alertas são gerados com base no comportamento financeiro do mês.
+- O gráfico de categorias considera apenas despesas.
+- O gráfico de evolução mensal compara receitas e despesas ao longo do ano.
+- A exportação CSV respeita os filtros aplicados.
+- A busca por título funciona em conjunto com os demais filtros.
+- A paginação organiza os resultados sem perder os filtros aplicados.
 
 ---
 
-## ✅ Funcionalidades já implementadas
+## ✅ Funcionalidades implementadas
 
 - [x] Cadastro de usuário
 - [x] Login e logout
 - [x] Hash de senha
+- [x] Usuário demo
+- [x] Proteção de rotas
+- [x] Tratamento de sessão expirada
 - [x] CRUD completo de transações
+- [x] Cadastro de receitas
+- [x] Cadastro de despesas
+- [x] Recorrência mensal
 - [x] Dashboard financeiro
+- [x] Total de receitas
+- [x] Total de despesas
+- [x] Saldo final
+- [x] Taxa de economia
+- [x] Meta financeira mensal
+- [x] Alertas inteligentes
+- [x] Gráfico de evolução mensal
 - [x] Gráfico de despesas por categoria
 - [x] Filtro por mês e ano
 - [x] Filtro por tipo
 - [x] Filtro por categoria
 - [x] Busca por título
-- [x] Recorrência mensal
 - [x] Exportação CSV
 - [x] Paginação
 - [x] Categorias padronizadas
+- [x] Responsividade mobile
+- [x] Deploy em produção no Render
 
 ---
 
 ## 🔮 Melhorias futuras
 
-Algumas melhorias que podem ser adicionadas no futuro:
+Algumas melhorias que podem ser adicionadas futuramente:
 
-- Responsividade ainda mais refinada
-- Tema escuro
-- Definição de metas financeiras
-- Relatórios mais avançados
-- Mais tipos de recorrência
 - Recuperação de senha
-- Deploy em produção
-- Integração com PostgreSQL
-- Dashboard com mais gráficos
 - Filtro por intervalo de datas
+- Mais tipos de recorrência
+- Edição de categorias personalizadas
+- Relatórios financeiros mais avançados
+- Comparativo entre períodos
+- Tema escuro
+- Testes automatizados
+- Melhorias adicionais de acessibilidade
 
 ---
 
@@ -229,16 +370,21 @@ Algumas melhorias que podem ser adicionadas no futuro:
 
 Durante o desenvolvimento deste sistema, pratiquei e consolidei conhecimentos em:
 
-- estruturação de aplicações Flask
-- rotas e templates com Jinja2
-- integração com banco de dados usando SQLAlchemy
-- autenticação e controle de sessão
-- validação de formulários
-- implementação de regras de negócio reais
-- manipulação de listas e filtros no backend
-- exportação de dados em CSV
-- gráficos no front-end com Chart.js
-- organização de projeto para portfólio
+- estruturação de aplicações Flask;
+- criação de rotas e templates com Jinja2;
+- integração com banco de dados usando SQLAlchemy;
+- autenticação e controle de sessão;
+- proteção de rotas privadas;
+- validação de formulários;
+- implementação de regras de negócio;
+- manipulação de filtros no backend;
+- cálculo de indicadores financeiros;
+- criação de dashboards;
+- uso de gráficos com Chart.js;
+- exportação de dados em CSV;
+- responsividade com CSS;
+- deploy de aplicação Flask no Render;
+- organização de projeto para portfólio.
 
 ---
 
@@ -246,7 +392,7 @@ Durante o desenvolvimento deste sistema, pratiquei e consolidei conhecimentos em
 
 Este projeto faz parte do meu processo de evolução como desenvolvedor, com foco em construir aplicações web cada vez mais completas, organizadas e próximas de cenários reais de uso.
 
-A proposta foi ir além de um CRUD simples, adicionando autenticação, dashboard, recorrência, filtros avançados, exportação e melhor experiência de navegação.
+A proposta foi ir além de um CRUD simples, adicionando autenticação, dashboard, recorrência, filtros avançados, exportação, metas financeiras, alertas automáticos, responsividade e deploy em produção.
 
 ---
 
