@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, Response, jsonify
+from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import inspect, text
 from datetime import datetime, date
@@ -219,6 +220,26 @@ def create_app():
 
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    if database_url:
+        app.config["SESSION_COOKIE_SAMESITE"] = "None"
+        app.config["SESSION_COOKIE_SECURE"] = True
+    else:
+        app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+        app.config["SESSION_COOKIE_SECURE"] = False
+
+    CORS(
+        app,
+        supports_credentials=True,
+        resources={
+            r"/api/*": {
+                "origins": [
+                    "http://localhost:8081",
+                    "http://127.0.0.1:8081"
+                ]
+            }
+        }
+    )
+
     db.init_app(app)
 
     def get_current_user():
@@ -242,8 +263,6 @@ def create_app():
             "message": "API is running",
             "project": "Personal Finance Tracker"
         }), 200
-
-
 
     @app.route("/api/demo-login", methods=["GET", "POST"])
     @app.route("/api/demo-login/", methods=["GET", "POST"])
