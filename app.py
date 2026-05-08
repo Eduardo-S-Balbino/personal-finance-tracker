@@ -243,6 +243,8 @@ def create_app():
             "project": "Personal Finance Tracker"
         }), 200
 
+
+
     @app.route("/api/demo-login", methods=["GET", "POST"])
     @app.route("/api/demo-login/", methods=["GET", "POST"])
     def api_demo_login():
@@ -258,6 +260,196 @@ def create_app():
                 "id": demo_user.id,
                 "username": demo_user.username,
                 "email": demo_user.email
+            }
+        }), 200
+
+    @app.route("/api/dashboard")
+    @app.route("/api/dashboard/")
+    def api_dashboard():
+        current_user = get_current_user()
+
+        if not current_user:
+            return jsonify({
+                "status": "error",
+                "message": "Authentication required"
+            }), 401
+
+        current_date = datetime.today()
+
+        selected_month = request.args.get("month", default=current_date.month, type=int)
+        selected_year = request.args.get("year", default=current_date.year, type=int)
+        selected_type = request.args.get("type", default="")
+        selected_category = request.args.get("category", default="")
+
+        raw_transactions = Transaction.query.filter_by(
+            user_id=current_user.id
+        ).order_by(Transaction.date.desc()).all()
+
+        monthly_transactions = build_effective_transactions(
+            raw_transactions,
+            selected_month,
+            selected_year
+        )
+
+        filtered_transactions = monthly_transactions
+
+        if selected_type:
+            filtered_transactions = [
+                transaction for transaction in filtered_transactions
+                if transaction.type == selected_type
+            ]
+
+        if selected_category:
+            filtered_transactions = [
+                transaction for transaction in filtered_transactions
+                if transaction.category == selected_category
+            ]
+
+        total_income = sum(
+            transaction.amount for transaction in filtered_transactions
+            if transaction.type == "receita"
+        )
+
+        total_expense = sum(
+            transaction.amount for transaction in filtered_transactions
+            if transaction.type == "despesa"
+        )
+
+        balance = total_income - total_expense
+
+        savings_rate = 0
+        if total_income > 0:
+            savings_rate = ((balance / total_income) * 100)
+
+        goal_percentage = current_user.goal_percentage or 20
+
+        goal_progress = 0
+        if savings_rate > 0:
+            goal_progress = (savings_rate / goal_percentage) * 100
+
+        if goal_progress > 100:
+            goal_progress = 100
+
+        recent_transactions = filtered_transactions[:5]
+
+        expense_by_category = {}
+
+        for transaction in filtered_transactions:
+            if transaction.type == "despesa":
+                category = transaction.category
+                expense_by_category[category] = expense_by_category.get(category, 0) + transaction.amount
+
+        chart_labels = list(expense_by_category.keys())
+        chart_values = list(expense_by_category.values())
+
+        top_category = None
+        if expense_by_category:
+            top_category = max(expense_by_category, key=expense_by_category.get)
+
+        monthly_labels = [
+            "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+            "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+        ]
+
+        monthly_income_values = []
+        monthly_expense_values = []
+
+        for month in range(1, 13):
+            month_transactions = build_effective_transactions(
+                raw_transactions,
+                month,
+                selected_year
+            )
+
+            month_income = sum(
+                transaction.amount for transaction in month_transactions
+                if transaction.type == "receita"
+            )
+
+            month_expense = sum(
+                transaction.amount for transaction in month_transactions
+                if transaction.type == "despesa"
+            )
+
+            monthly_income_values.append(month_income)
+            monthly_expense_values.append(month_expense)
+
+        alerts = []
+
+        current_month_index = selected_month - 1
+        current_expense = monthly_expense_values[current_month_index]
+
+        previous_expense = 0
+        if current_month_index > 0:
+            previous_expense = monthly_expense_values[current_month_index - 1]
+
+        if total_expense > total_income:
+            alerts.append("Você está gastando mais do que ganha neste mês.")
+
+        if previous_expense > 0 and current_expense > previous_expense:
+            increase = ((current_expense - previous_expense) / previous_expense) * 100
+            alerts.append(f"Seus gastos aumentaram {increase:.1f}% em relação ao mês anterior.")
+
+        if top_category and total_expense > 0:
+            top_value = max(chart_values) if chart_values else 0
+            percentage = (top_value / total_expense) * 100
+
+            if percentage > 50:
+                alerts.append(f"A categoria '{top_category}' representa {percentage:.1f}% dos seus gastos.")
+
+        available_categories = sorted(
+            list({transaction.category for transaction in monthly_transactions})
+        )
+
+        serialized_recent_transactions = []
+        for transaction in recent_transactions:
+            serialized_recent_transactions.append({
+                "id": transaction.id,
+                "title": transaction.title,
+                "amount": transaction.amount,
+                "type": transaction.type,
+                "category": transaction.category,
+                "date": transaction.date.isoformat(),
+                "description": transaction.description if transaction.description else "",
+                "is_recurring": transaction.is_recurring,
+                "recurrence_type": transaction.recurrence_type
+            })
+
+        return jsonify({
+            "status": "ok",
+            "user": {
+                "id": current_user.id,
+                "username": current_user.username,
+                "email": current_user.email
+            },
+            "filters": {
+                "selected_month": selected_month,
+                "selected_year": selected_year,
+                "selected_type": selected_type,
+                "selected_category": selected_category,
+                "available_categories": available_categories
+            },
+            "summary": {
+                "total_income": round(total_income, 2),
+                "total_expense": round(total_expense, 2),
+                "balance": round(balance, 2),
+                "savings_rate": round(savings_rate, 1),
+                "goal_percentage": goal_percentage,
+                "goal_progress": round(goal_progress, 1),
+                "top_category": top_category
+            },
+            "alerts": alerts,
+            "recent_transactions": serialized_recent_transactions,
+            "charts": {
+                "expense_by_category": {
+                    "labels": chart_labels,
+                    "values": chart_values
+                },
+                "monthly_evolution": {
+                    "labels": monthly_labels,
+                    "income_values": monthly_income_values,
+                    "expense_values": monthly_expense_values
+                }
             }
         }), 200
 
