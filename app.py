@@ -453,8 +453,8 @@ def create_app():
             }
         }), 200
 
-    @app.route("/api/transactions", methods=["GET", "POST"])
-    @app.route("/api/transactions/", methods=["GET", "POST"])
+    @app.route("/api/transactions")
+    @app.route("/api/transactions/")
     def api_transactions():
         current_user = get_current_user()
 
@@ -463,91 +463,6 @@ def create_app():
                 "status": "error",
                 "message": "Authentication required"
             }), 401
-
-        if request.method == "POST":
-            payload = request.get_json(silent=True)
-
-            if not payload:
-                return jsonify({
-                    "status": "error",
-                    "message": "JSON body is required"
-                }), 400
-
-            title = str(payload.get("title", "")).strip()
-            amount = payload.get("amount")
-            type_ = str(payload.get("type", "")).strip().lower()
-            category = str(payload.get("category", "")).strip()
-            date_str = str(payload.get("date", "")).strip()
-            description = str(payload.get("description", "")).strip()
-            recurrence = str(payload.get("recurrence", "once")).strip().lower()
-
-            if not title or amount is None or not type_ or not category or not date_str:
-                return jsonify({
-                    "status": "error",
-                    "message": "Title, amount, type, category and date are required"
-                }), 400
-
-            try:
-                amount = float(amount)
-            except (TypeError, ValueError):
-                return jsonify({
-                    "status": "error",
-                    "message": "Amount must be a valid number"
-                }), 400
-
-            if amount <= 0:
-                return jsonify({
-                    "status": "error",
-                    "message": "Amount must be greater than zero"
-                }), 400
-
-            if type_ not in ["receita", "despesa"]:
-                return jsonify({
-                    "status": "error",
-                    "message": "Type must be 'receita' or 'despesa'"
-                }), 400
-
-            try:
-                transaction_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-            except ValueError:
-                return jsonify({
-                    "status": "error",
-                    "message": "Date must be in YYYY-MM-DD format"
-                }), 400
-
-            is_recurring = recurrence == "monthly"
-            recurrence_type = "monthly" if is_recurring else None
-
-            new_transaction = Transaction(
-                title=title,
-                amount=amount,
-                type=type_,
-                category=category,
-                date=transaction_date,
-                description=description,
-                is_recurring=is_recurring,
-                recurrence_type=recurrence_type,
-                user_id=current_user.id
-            )
-
-            db.session.add(new_transaction)
-            db.session.commit()
-
-            return jsonify({
-                "status": "ok",
-                "message": "Transaction created successfully",
-                "transaction": {
-                    "id": new_transaction.id,
-                    "title": new_transaction.title,
-                    "amount": new_transaction.amount,
-                    "type": new_transaction.type,
-                    "category": new_transaction.category,
-                    "date": new_transaction.date.isoformat(),
-                    "description": new_transaction.description if new_transaction.description else "",
-                    "is_recurring": new_transaction.is_recurring,
-                    "recurrence_type": new_transaction.recurrence_type
-                }
-            }), 201
 
         data = get_filtered_transactions_for_user(current_user.id)
         all_transactions = data["transactions"]
@@ -615,6 +530,133 @@ def create_app():
             },
             "transactions": serialized_transactions
         }), 200
+
+
+
+    @app.route("/api/transactions/<int:transaction_id>", methods=["PUT"])
+    @app.route("/api/transactions/<int:transaction_id>/", methods=["PUT"])
+    def api_update_transaction(transaction_id):
+        current_user = get_current_user()
+
+        if not current_user:
+            return jsonify({
+                "status": "error",
+                "message": "Authentication required"
+            }), 401
+
+        transaction = Transaction.query.get(transaction_id)
+
+        if not transaction:
+            return jsonify({
+                "status": "error",
+                "message": "Transaction not found"
+            }), 404
+
+        if transaction.user_id != current_user.id:
+            return jsonify({
+                "status": "error",
+                "message": "You do not have permission to update this transaction"
+            }), 403
+
+        payload = request.get_json(silent=True)
+
+        if not payload:
+            return jsonify({
+                "status": "error",
+                "message": "JSON body is required"
+            }), 400
+
+        if "title" in payload:
+            title = str(payload.get("title", "")).strip()
+
+            if not title:
+                return jsonify({
+                    "status": "error",
+                    "message": "Title cannot be empty"
+                }), 400
+
+            transaction.title = title
+
+        if "amount" in payload:
+            amount = payload.get("amount")
+
+            try:
+                amount = float(amount)
+            except (TypeError, ValueError):
+                return jsonify({
+                    "status": "error",
+                    "message": "Amount must be a valid number"
+                }), 400
+
+            if amount <= 0:
+                return jsonify({
+                    "status": "error",
+                    "message": "Amount must be greater than zero"
+                }), 400
+
+            transaction.amount = amount
+
+        if "type" in payload:
+            type_ = str(payload.get("type", "")).strip().lower()
+
+            if type_ not in ["receita", "despesa"]:
+                return jsonify({
+                    "status": "error",
+                    "message": "Type must be 'receita' or 'despesa'"
+                }), 400
+
+            transaction.type = type_
+
+        if "category" in payload:
+            category = str(payload.get("category", "")).strip()
+
+            if not category:
+                return jsonify({
+                    "status": "error",
+                    "message": "Category cannot be empty"
+                }), 400
+
+            transaction.category = category
+
+        if "date" in payload:
+            date_str = str(payload.get("date", "")).strip()
+
+            try:
+                transaction_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                return jsonify({
+                    "status": "error",
+                    "message": "Date must be in YYYY-MM-DD format"
+                }), 400
+
+            transaction.date = transaction_date
+
+        if "description" in payload:
+            transaction.description = str(payload.get("description", "")).strip()
+
+        if "recurrence" in payload:
+            recurrence = str(payload.get("recurrence", "once")).strip().lower()
+            transaction.is_recurring = recurrence == "monthly"
+            transaction.recurrence_type = "monthly" if transaction.is_recurring else None
+
+        db.session.commit()
+
+        return jsonify({
+            "status": "ok",
+            "message": "Transaction updated successfully",
+            "transaction": {
+                "id": transaction.id,
+                "title": transaction.title,
+                "amount": transaction.amount,
+                "type": transaction.type,
+                "category": transaction.category,
+                "date": transaction.date.isoformat(),
+                "description": transaction.description if transaction.description else "",
+                "is_recurring": transaction.is_recurring,
+                "recurrence_type": transaction.recurrence_type
+            }
+        }), 200
+
 
     @app.route("/")
     def home():
