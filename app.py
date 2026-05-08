@@ -453,6 +453,84 @@ def create_app():
             }
         }), 200
 
+    @app.route("/api/transactions")
+    @app.route("/api/transactions/")
+    def api_transactions():
+        current_user = get_current_user()
+
+        if not current_user:
+            return jsonify({
+                "status": "error",
+                "message": "Authentication required"
+            }), 401
+
+        data = get_filtered_transactions_for_user(current_user.id)
+        all_transactions = data["transactions"]
+
+        page = request.args.get("page", default=1, type=int)
+        per_page = request.args.get("per_page", default=10, type=int)
+
+        if per_page < 1:
+            per_page = 10
+
+        if per_page > 50:
+            per_page = 50
+
+        total_transactions = len(all_transactions)
+        total_pages = (total_transactions + per_page - 1) // per_page
+
+        if total_pages == 0:
+            total_pages = 1
+
+        if page < 1:
+            page = 1
+
+        if page > total_pages:
+            page = total_pages
+
+        start_index = (page - 1) * per_page
+        end_index = start_index + per_page
+
+        paginated_transactions = all_transactions[start_index:end_index]
+
+        serialized_transactions = []
+        for transaction in paginated_transactions:
+            serialized_transactions.append({
+                "id": transaction.id,
+                "title": transaction.title,
+                "amount": transaction.amount,
+                "type": transaction.type,
+                "category": transaction.category,
+                "date": transaction.date.isoformat(),
+                "description": transaction.description if transaction.description else "",
+                "is_recurring": transaction.is_recurring,
+                "recurrence_type": transaction.recurrence_type
+            })
+
+        return jsonify({
+            "status": "ok",
+            "user": {
+                "id": current_user.id,
+                "username": current_user.username,
+                "email": current_user.email
+            },
+            "filters": {
+                "selected_month": data["selected_month"],
+                "selected_year": data["selected_year"],
+                "selected_type": data["selected_type"],
+                "selected_category": data["selected_category"],
+                "search_title": data["search_title"],
+                "available_categories": data["available_categories"]
+            },
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total_pages": total_pages,
+                "total_transactions": total_transactions
+            },
+            "transactions": serialized_transactions
+        }), 200
+
     @app.route("/")
     def home():
         current_user = get_current_user()
