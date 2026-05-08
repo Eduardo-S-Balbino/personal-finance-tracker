@@ -243,6 +243,24 @@ def create_app():
             "project": "Personal Finance Tracker"
         }), 200
 
+    @app.route("/api/demo-login", methods=["GET", "POST"])
+    @app.route("/api/demo-login/", methods=["GET", "POST"])
+    def api_demo_login():
+        demo_user = create_demo_account()
+
+        session["user_id"] = demo_user.id
+        session["username"] = demo_user.username
+
+        return jsonify({
+            "status": "ok",
+            "message": "Demo login successful",
+            "user": {
+                "id": demo_user.id,
+                "username": demo_user.username,
+                "email": demo_user.email
+            }
+        }), 200
+
     @app.route("/")
     def home():
         current_user = get_current_user()
