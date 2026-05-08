@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, session, Response, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import inspect, text
 from datetime import datetime, date
@@ -233,6 +233,15 @@ def create_app():
             return None
 
         return user
+
+    @app.route("/api/health")
+    @app.route("/api/health/")
+    def api_health():
+        return jsonify({
+            "status": "ok",
+            "message": "API is running",
+            "project": "Personal Finance Tracker"
+        }), 200
 
     @app.route("/")
     def home():
