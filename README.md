@@ -1,14 +1,16 @@
 # 💰 Personal Finance Tracker
 
-Sistema web de controle financeiro pessoal desenvolvido com **Python**, **Flask**, **SQLAlchemy**, **SQLite**, **PostgreSQL**, **Jinja2**, **CSS** e **Chart.js**.
+Sistema de controle financeiro pessoal desenvolvido com **Python**, **Flask**, **SQLAlchemy**, **SQLite**, **PostgreSQL**, **Jinja2**, **CSS**, **Chart.js** e integração com aplicativo mobile em **React Native / Expo**.
 
-O projeto permite organizar receitas e despesas, acompanhar saldo, visualizar gráficos, aplicar filtros avançados, registrar transações recorrentes, definir metas financeiras, receber alertas do mês, exportar dados em CSV e acessar uma conta demo para teste.
+O projeto permite organizar receitas e despesas, acompanhar saldo, visualizar gráficos, aplicar filtros avançados, registrar transações recorrentes, definir metas financeiras, receber alertas do mês, exportar dados em CSV, acessar uma conta demo para teste e consumir uma **API REST mobile** integrada a um app Android.
 
 ---
 
 ## 🔗 Acesse o projeto online
 
-🌐 **Deploy:** [https://personal-finance-tracker-wrlj.onrender.com](https://personal-finance-tracker-wrlj.onrender.com)
+🌐 **Deploy web:** [https://personal-finance-tracker-wrlj.onrender.com](https://personal-finance-tracker-wrlj.onrender.com)
+
+📱 **Repositório mobile:** [https://github.com/Eduardo-S-Balbino/personal-finance-tracker-mobile](https://github.com/Eduardo-S-Balbino/personal-finance-tracker-mobile)
 
 ---
 
@@ -18,7 +20,23 @@ O **Personal Finance Tracker** foi criado para ajudar usuários a registrarem e 
 
 A aplicação conta com autenticação de usuários, dashboard financeiro, CRUD completo de transações, filtros combinados, busca por título, recorrência mensal, exportação CSV, metas de economia, alertas financeiros e visualização gráfica dos dados.
 
-Este projeto faz parte da construção do meu portfólio como desenvolvedor, demonstrando evolução em relação a projetos anteriores ao incluir regras de negócio mais completas, autenticação, banco de dados, dashboard analítico, deploy em produção e preocupação com responsividade.
+Além da versão web, o projeto foi evoluído com uma **API REST mobile** consumida por um aplicativo Android desenvolvido com **React Native**, **Expo** e **TypeScript**. O app mobile se comunica com o backend Flask em produção, permitindo listar, criar, editar e excluir transações diretamente pelo celular.
+
+Este projeto faz parte da construção do meu portfólio como desenvolvedor, demonstrando evolução em relação a projetos anteriores ao incluir regras de negócio mais completas, autenticação, banco de dados, dashboard analítico, API REST, integração mobile, deploy em produção e preocupação com responsividade.
+
+---
+
+## 🧱 Visão geral da solução
+
+O projeto atualmente possui duas partes principais:
+
+### 🖥️ Versão web
+
+Aplicação Flask com interface renderizada por templates Jinja2, autenticação de usuários, dashboard financeiro, gráficos com Chart.js e gerenciamento completo de transações.
+
+### 📱 Versão mobile
+
+Aplicativo Android desenvolvido com React Native e Expo, consumindo endpoints REST do backend Flask em produção. A versão mobile possui dashboard financeiro, gráfico simples de despesas por categoria e CRUD completo de transações.
 
 ---
 
@@ -128,9 +146,87 @@ Foram feitos ajustes específicos para:
 - gráficos responsivos;
 - exibição dos meses no gráfico de evolução mensal.
 
+### 📲 API REST para aplicativo mobile
+
+O backend Flask também disponibiliza endpoints em JSON para consumo por aplicativo mobile.
+
+A API permite:
+
+- carregar dados do dashboard mobile;
+- listar transações;
+- criar transações;
+- editar transações;
+- excluir transações;
+- retornar dados formatados para visualização no app.
+
+---
+
+## 📱 Aplicativo mobile Android
+
+O projeto possui um app mobile separado desenvolvido com **React Native**, **Expo**, **Expo Router** e **TypeScript**.
+
+O aplicativo consome o backend Flask publicado no Render e permite utilizar o sistema pelo celular.
+
+### Funcionalidades do app mobile
+
+- Dashboard mobile.
+- Cards de saldo, receitas e despesas.
+- Indicadores financeiros.
+- Progresso da meta de economia.
+- Alerta financeiro.
+- Gráfico simples de despesas por categoria.
+- Listagem de transações recentes.
+- Listagem completa de transações.
+- Criação de transações.
+- Edição de transações.
+- Exclusão de transações.
+- Integração com API REST em produção.
+- APK Android gerado com EAS Build.
+
+### Repositório mobile
+
+```text
+https://github.com/Eduardo-S-Balbino/personal-finance-tracker-mobile
+```
+
+---
+
+## 🔌 Endpoints mobile
+
+Principais endpoints utilizados pelo aplicativo mobile:
+
+```text
+GET    /api/mobile/demo-dashboard
+GET    /api/mobile/transactions
+POST   /api/mobile/transactions
+PUT    /api/mobile/transactions/<id>
+DELETE /api/mobile/transactions/<id>
+```
+
+### Exemplo de resposta do dashboard mobile
+
+```json
+{
+  "status": "ok",
+  "summary": {
+    "balance": 2530.0,
+    "total_income": 4300.0,
+    "total_expense": 1770.0,
+    "savings_rate": 58.8,
+    "top_category": "Moradia"
+  },
+  "alerts": [
+    "A categoria 'Moradia' representa 67.8% dos seus gastos."
+  ],
+  "recent_transactions": []
+}
+```
+
 ---
 
 ## 🛠️ Tecnologias utilizadas
+
+### Backend / Web
 
 - **Python**
 - **Flask**
@@ -146,9 +242,28 @@ Foram feitos ajustes específicos para:
 - **Gunicorn**
 - **Render**
 
+### Mobile
+
+- **React Native**
+- **Expo**
+- **Expo Router**
+- **TypeScript**
+- **EAS Build**
+- **Android APK**
+- **API REST**
+
+### Ferramentas
+
+- **Git**
+- **GitHub**
+- **VS Code**
+- **PowerShell**
+- **Render**
+- **Expo Go**
+
 ---
 
-## 📂 Estrutura do projeto
+## 📂 Estrutura do projeto web
 
 ```text
 personal-finance-tracker/
@@ -184,7 +299,36 @@ personal-finance-tracker/
 
 ---
 
-## ▶️ Como executar o projeto localmente
+## 📂 Estrutura do projeto mobile
+
+```text
+personal-finance-tracker-mobile/
+│
+├── app/
+│   ├── (tabs)/
+│   │   ├── index.tsx       # Dashboard mobile
+│   │   ├── explore.tsx     # Tela de transações com CRUD
+│   │   └── _layout.tsx     # Navegação por abas
+│   │
+│   ├── _layout.tsx
+│   └── modal.tsx
+│
+├── assets/
+│   └── images/
+│
+├── components/
+├── constants/
+├── hooks/
+├── app.json
+├── eas.json
+├── package.json
+├── package-lock.json
+└── README.md
+```
+
+---
+
+## ▶️ Como executar o projeto web localmente
 
 ### 1. Clone o repositório
 
@@ -238,9 +382,77 @@ http://127.0.0.1:5000
 
 ---
 
+## ▶️ Como executar o app mobile localmente
+
+### 1. Clone o repositório mobile
+
+```bash
+git clone https://github.com/Eduardo-S-Balbino/personal-finance-tracker-mobile.git
+```
+
+### 2. Acesse a pasta
+
+```bash
+cd personal-finance-tracker-mobile
+```
+
+### 3. Instale as dependências
+
+```bash
+npm install
+```
+
+### 4. Execute com Expo
+
+```bash
+npx expo start
+```
+
+### 5. Teste no celular
+
+1. Instale o aplicativo **Expo Go** no celular.
+2. Escaneie o QR Code exibido no terminal.
+3. Teste as telas de Dashboard e Transações.
+
+> O computador e o celular precisam estar conectados à mesma rede Wi-Fi.
+
+### 6. Teste no navegador
+
+```bash
+npm run web
+```
+
+ou:
+
+```bash
+npx expo start --web
+```
+
+---
+
+## 📦 Build Android com EAS
+
+O app mobile está configurado para geração de APK Android usando **EAS Build**.
+
+### Configurar EAS
+
+```bash
+eas build:configure
+```
+
+### Gerar APK de preview
+
+```bash
+eas build -p android --profile preview
+```
+
+Após a finalização do build, o Expo fornece um link/QR Code para baixar e instalar o APK no Android.
+
+---
+
 ## 🌐 Deploy
 
-O projeto foi publicado no **Render**.
+O projeto web foi publicado no **Render**.
 
 Em desenvolvimento local, a aplicação utiliza **SQLite**.
 
@@ -267,6 +479,9 @@ O sistema possui as seguintes telas principais:
 - Lista de transações
 - Filtros avançados
 - Exportação CSV
+- Dashboard mobile
+- CRUD mobile de transações
+- Gráfico mobile por categoria
 
 ---
 
@@ -307,7 +522,7 @@ O sistema possui as seguintes telas principais:
 Um usuário pode:
 
 1. Criar uma conta ou entrar como usuário demo.
-2. Fazer login no sistema.
+2. Fazer login no sistema web.
 3. Cadastrar receitas e despesas.
 4. Definir transações como únicas ou mensais.
 5. Visualizar receitas, despesas, saldo e taxa de economia no dashboard.
@@ -319,6 +534,9 @@ Um usuário pode:
 11. Buscar transações por título.
 12. Navegar entre páginas da listagem.
 13. Exportar as transações filtradas em CSV.
+14. Consumir os dados pela API mobile.
+15. Criar, editar e excluir transações pelo aplicativo Android.
+16. Atualizar o dashboard mobile com os dados do backend em produção.
 
 ---
 
@@ -338,6 +556,8 @@ Um usuário pode:
 - A exportação CSV respeita os filtros aplicados.
 - A busca por título funciona em conjunto com os demais filtros.
 - A paginação organiza os resultados sem perder os filtros aplicados.
+- A API mobile retorna dados em JSON para integração com o aplicativo.
+- O app mobile envia operações de criação, edição e exclusão para o backend em produção.
 
 ---
 
@@ -349,7 +569,7 @@ Um usuário pode:
 - [x] Usuário demo
 - [x] Proteção de rotas
 - [x] Tratamento de sessão expirada
-- [x] CRUD completo de transações
+- [x] CRUD completo de transações na web
 - [x] Cadastro de receitas
 - [x] Cadastro de despesas
 - [x] Recorrência mensal
@@ -371,6 +591,36 @@ Um usuário pode:
 - [x] Categorias padronizadas
 - [x] Responsividade mobile
 - [x] Deploy em produção no Render
+- [x] API REST para app mobile
+- [x] App mobile com React Native e Expo
+- [x] Dashboard mobile
+- [x] Gráfico mobile de despesas por categoria
+- [x] CRUD completo de transações no app mobile
+- [x] APK Android gerado com EAS Build
+
+---
+
+## 🧪 Testes realizados
+
+Foram realizados testes manuais na versão web, na API mobile, no navegador, no Expo Go e no APK Android.
+
+Validações realizadas:
+
+- Login e acesso demo.
+- Cadastro de transações.
+- Edição de transações.
+- Exclusão de transações.
+- Filtros do dashboard.
+- Filtros da tela de transações.
+- Exportação CSV.
+- Carregamento dos gráficos.
+- Consumo dos endpoints mobile.
+- Criação de transação via API.
+- Edição de transação via API.
+- Exclusão de transação via API.
+- Integração do app mobile com backend em produção.
+- Instalação e execução do APK em celular Android.
+- Atualização do dashboard mobile após mudanças nas transações.
 
 ---
 
@@ -387,6 +637,10 @@ Algumas melhorias que podem ser adicionadas futuramente:
 - Tema escuro
 - Testes automatizados
 - Melhorias adicionais de acessibilidade
+- Autenticação completa no app mobile
+- Login e cadastro no app mobile
+- Publicação do app em loja de aplicativos
+- Notificações e lembretes financeiros
 
 ---
 
@@ -408,15 +662,19 @@ Durante o desenvolvimento deste sistema, pratiquei e consolidei conhecimentos em
 - exportação de dados em CSV;
 - responsividade com CSS;
 - deploy de aplicação Flask no Render;
+- criação de endpoints REST para consumo mobile;
+- integração entre backend Flask e app React Native;
+- envio de requisições GET, POST, PUT e DELETE;
+- geração de APK Android com EAS Build;
 - organização de projeto para portfólio.
 
 ---
 
 ## 🎯 Objetivo profissional
 
-Este projeto faz parte do meu processo de evolução como desenvolvedor, com foco em construir aplicações web cada vez mais completas, organizadas e próximas de cenários reais de uso.
+Este projeto faz parte do meu processo de evolução como desenvolvedor, com foco em construir aplicações web e mobile cada vez mais completas, organizadas e próximas de cenários reais de uso.
 
-A proposta foi ir além de um CRUD simples, adicionando autenticação, dashboard, recorrência, filtros avançados, exportação, metas financeiras, alertas automáticos, responsividade e deploy em produção.
+A proposta foi ir além de um CRUD simples, adicionando autenticação, dashboard, recorrência, filtros avançados, exportação, metas financeiras, alertas automáticos, responsividade, API REST, integração mobile e deploy em produção.
 
 ---
 
